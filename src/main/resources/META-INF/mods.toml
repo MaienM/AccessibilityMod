@@ -1,25 +1,25 @@
 modLoader="boxlin"
 loaderVersion="[3,)"
-issueTrackerURL="https://gitlab.com/maienm/mc-colorblind-tools/issues/"
+issueTrackerURL="https://gitlab.com/maienm/mc-accessibility-mod/issues/"
 
 [[mods]]
-modId="colorblindtools"
+modId="accessibilitymod"
 version="${file.jarVersion}"
-displayName="Colorblind Tools"
+displayName="Accessibility Mod"
 authors="MaienM"
 description='''
-Things to make the life of a colorblind person easier.
+Things to make modded Minecraft a bit more accessible.
 
-Mostly though text conveying the same information colors are.
+Mostly focussed on colorblindness.
 '''
 
-[[dependencies.colorblindtools]]
+[[dependencies.accessibilitymod]]
 	modId="minecraft"
 	mandatory=true
 	versionRange="[1.14.4]"
 	ordering="NONE"
 	side="BOTH"
-[[dependencies.colorblindtools]]
+[[dependencies.accessibilitymod]]
 	modId="forge"
 	mandatory=true
 	versionRange="[28,)"

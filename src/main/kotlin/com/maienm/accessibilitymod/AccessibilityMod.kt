@@ -1,4 +1,4 @@
-package com.maienm.colorblindtools
+package com.maienm.accessibilitymod
 
 import io.opencubes.boxlin.adapter.BoxlinContext
 import net.minecraft.client.Minecraft
@@ -12,9 +12,9 @@ import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import org.lwjgl.opengl.GL11
 
-@Mod(ColorblindTools.ID)
-object ColorblindTools {
-	const val ID = "colorblindtools"
+@Mod(AccessibilityMod.ID)
+object AccessibilityMod {
+	const val ID = "accessibilitymod"
 	private lateinit var FONT: FontRenderer
 
 	init {

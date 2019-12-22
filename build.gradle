@@ -15,8 +15,8 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'kotlin'
 
-group = 'com.maienm.colorblindtools'
-archivesBaseName = 'colorblindtools'
+group = 'com.maienm.accessibilitymod'
+archivesBaseName = 'accessibilitymod'
 version = '0.1.0-SNAPSHOT'
 
 repositories {
@@ -31,10 +31,10 @@ minecraft {
 	runs {
 		client {
 			workingDirectory project.file('run')
-			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP,COREMOD'
 			property 'forge.logging.console.level', 'debug'
 			mods {
-				colorblindtools {
+				accessibilitymod {
 					source sourceSets.main
 				}
 			}
@@ -42,10 +42,10 @@ minecraft {
 
 		server {
 			workingDirectory project.file('run')
-			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP,COREMOD'
 			property 'forge.logging.console.level', 'debug'
 			mods {
-				colorblindtools {
+				accessibilitymod {
 					source sourceSets.main
 				}
 			}
@@ -53,11 +53,11 @@ minecraft {
 
 		data {
 			workingDirectory project.file('run')
-			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+			property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP,COREMOD'
 			property 'forge.logging.console.level', 'debug'
-			args '--mod', 'colorblindtools', '--all', '--output', file('src/generated/resources/')
+			args '--mod', 'accessibilitymod', '--all', '--output', file('src/generated/resources/')
 			mods {
-				colorblindtools {
+				accessibilitymod {
 					source sourceSets.main
 				}
 			}
