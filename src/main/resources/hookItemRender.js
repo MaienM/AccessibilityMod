@@ -19,15 +19,15 @@ function initializeCoreMod() {
 						var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode');
 						var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 
-						// com.maienm.accessibilitymod.AccessibilityMod.INSTANCE.renderItemModelIntoGUI(this, fr, stack, xPosition, yPosition);
+						// com.maienm.accessibilitymod.CoreModHooks.INSTANCE.onItemRendererRenderItemModelIntoGUI(this, fr, stack, xPosition, yPosition);
 						var toInsert = new InsnList();
-						toInsert.add(new FieldInsnNode(Opcodes.GETSTATIC, 'com/maienm/accessibilitymod/AccessibilityMod', 'INSTANCE', 'Lcom/maienm/accessibilitymod/AccessibilityMod;'));
+						toInsert.add(new FieldInsnNode(Opcodes.GETSTATIC, 'com/maienm/accessibilitymod/CoreModHooks', 'INSTANCE', 'Lcom/maienm/accessibilitymod/CoreModHooks;'));
 						toInsert.add(new VarInsnNode(Opcodes.ALOAD, 0)); // ItemRenderer (this)
 						toInsert.add(new VarInsnNode(Opcodes.ALOAD, 1)); // ItemStack
 						toInsert.add(new VarInsnNode(Opcodes.ILOAD, 2)); // x
 						toInsert.add(new VarInsnNode(Opcodes.ILOAD, 3)); // y
 						toInsert.add(new VarInsnNode(Opcodes.ALOAD, 4)); // IBakedModel
-						toInsert.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, 'com/maienm/accessibilitymod/AccessibilityMod', 'onRenderItemModelIntoGUI', '(Lnet/minecraft/client/renderer/ItemRenderer;Lnet/minecraft/item/ItemStack;IILnet/minecraft/client/renderer/model/IBakedModel;)V', false));
+						toInsert.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, 'com/maienm/accessibilitymod/CoreModHooks', 'onItemRendererRenderItemModelIntoGUI', '(Lnet/minecraft/client/renderer/ItemRenderer;Lnet/minecraft/item/ItemStack;IILnet/minecraft/client/renderer/model/IBakedModel;)V', false));
 
 						method.instructions.insertBefore(insn, toInsert);
 					}
