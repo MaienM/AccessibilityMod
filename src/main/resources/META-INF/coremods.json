@@ -1,0 +1,3 @@
+{
+	"ItemRenderer.renderItemModelIntoGUI.postHook": "hookItemRender.js"
+}
