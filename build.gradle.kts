@@ -2,15 +2,23 @@ import net.minecraftforge.gradle.common.util.RunConfig
 import net.minecraftforge.gradle.userdev.DependencyManagementExtension
 import net.minecraftforge.gradle.userdev.UserDevExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FilterReader
+import java.io.PipedReader
+import java.io.PipedWriter
+import java.io.Reader
+import java.io.Writer
+import java.util.function.BiConsumer
 
 buildscript {
 	repositories {
 		jcenter()
+		mavenCentral()
 		maven(url = "http://files.minecraftforge.net/maven")
 	}
 	dependencies {
 		classpath(kotlin("gradle-plugin", version = "1.3.41"))
 		classpath("net.minecraftforge.gradle:ForgeGradle:3.+")
+		classpath("org.yaml:snakeyaml:1.25")
 	}
 }
 
@@ -61,6 +69,24 @@ configure<UserDevExtension> {
 	}
 }
 
+tasks.withType<ProcessResources> {
+	// Flatten yaml language files and convert them to json.
+	// { "foo": { "bar": "Hello", "baz": "World" } } becomes { "foo.bar": "Hello", "foo.baz": "World" }
+	filesMatching("**/lang/*.yml") {
+		relativePath = relativePath.replaceLastName(relativePath.lastName.replace("\\.yml$".toRegex(), ".json"))
+
+		fun transform(reader: Reader, writer: Writer) {
+			val config: HashMap<String, *> = org.yaml.snakeyaml.Yaml().load(reader)
+			val flattenedConfig = LinkedHashMap<String, Any>()
+			walkNestedMaps(config) { keys: List<String>, value: Any ->
+				flattenedConfig.put(keys.joinToString("."), value)
+			}
+			com.google.gson.Gson().toJson(flattenedConfig, writer)
+		}
+		filter(mutableMapOf("transform" to ::transform), TransformFilter::class.java)
+	}
+}
+
 dependencies {
 	"minecraft"("net.minecraftforge:forge:${versions.forge}")
 
@@ -75,3 +101,41 @@ dependencies {
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions.jvmTarget = "1.8"
+
+/**
+ * A FilterReader that allows transforming the entire file at once, instead of line-by-line.
+ */
+class TransformFilter(val originalReader: Reader): FilterReader(PipedReader()) {
+	fun setTransform(transform: (Reader, Writer) -> Unit) {
+		val writer = PipedWriter()
+		(this.`in` as PipedReader).connect(writer)
+		transform(this.originalReader, writer)
+		writer.close()
+	}
+}
+
+/**
+ * Walk over all non-map values in a nested map.
+ *
+ * Take the following map:
+ *   { "top1": { "sub1": "foo", "sub2": "bar" }, "top2": "baz" }.
+ * This will invoke the callable 3 times:
+ *   callable(["top1", "sub1"], "foo")
+ *   callable(["top1", "sub2"], "bar")
+ *   callable(["top2"], "baz")
+ *
+ * @param map The map to walk over.
+ * @param callback A callback that will be invoked with a list of keys and a value for each value in the nested maps.
+ */
+fun walkNestedMaps(map: Map<String, Any>, keys: MutableList<String> = ArrayList(), callback: (List<String>, Any) -> Unit) {
+	map.entries.forEach { entry ->
+		keys.add(keys.size, entry.key)
+		val entryMap = entry.value as? Map<String, Any>
+		if (entryMap != null) {
+			walkNestedMaps(entryMap, keys, callback)
+		} else {
+			callback(keys, entry.value)
+		}
+		keys.removeAt(keys.size - 1)
+	}
+}
