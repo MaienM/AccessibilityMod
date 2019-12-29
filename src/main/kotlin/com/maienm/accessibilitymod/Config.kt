@@ -33,6 +33,15 @@ object Config {
 				configOf("type" to "tag", "pattern" to "forge:ores/(.*)")
 			), { true }) as ForgeConfigSpec.ConfigValue<MutableList<NCConfig>>
 
+		var materialNames by builder
+			.comment(
+				"The mappings determine the material names of the items, but these can be quite long and somewhat cryptic.",
+				"In addition, some of them might not be useful to you. Because of this, these material names are not shown",
+				"directly, but are instead used in this mapping to determine the text that should be shown.",
+				"If a material is not in this mapping, no overlay will be shown for it."
+			)
+			.define("materialNames", configOf("iron" to "Fe", "gold" to "Au"))
+
 		init {
 			builder.pop()
 		}
