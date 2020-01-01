@@ -1,0 +1,24 @@
+accessibilitymod:
+   gui.config:
+      title: Accessibility Mod Config
+      close: Return to main menu
+      back: Back
+      matchers:
+         title: Item Overlay Matchers
+         description:
+            The matchers are ways to determine the material of an item.
+
+            This is primarily done by pattern matching on properties like id and tags.
+      mapping:
+         title: Item Overlay Mappings
+         description:
+            The matchers determine the material names of the items, but these can be quite long and somewhat cryptic.
+            Some of them might not even be useful to you.
+
+            Because of this these material names are not shown directly.
+            Instead, this mapping is used to determine the text to show for each material.
+            If a material is not in this mapping, no overlay will be shown for it.
+   gui.matchers:
+      tag:
+         name: Tag-based Item Matcher
+         pattern: Pattern
