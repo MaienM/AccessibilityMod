@@ -10,9 +10,9 @@ interface ILayoutableWidget<T> : ILayoutable {
 	val container: ILayoutableWidgetContainer
 	val positionable: Layoutable
 
-	fun setPosition(position: Position)
+	fun setArea(area: Area)
 
-	fun updatePosition() = this.setPosition(positionable.apply(container.getPosition()))
+	fun updateArea() = this.setArea(positionable.toArea(container.getArea()))
 
 	override fun doSetX1(calculator: IFirstPositionCalculator) = positionable.doSetX1(calculator)
 	override fun doSetX2(calculator: ISecondPositionCalculator) = positionable.doSetX2(calculator)
@@ -20,7 +20,8 @@ interface ILayoutableWidget<T> : ILayoutable {
 	override fun doSetY2(calculator: ISecondPositionCalculator) = positionable.doSetY2(calculator)
 
 	companion object {
-		fun <T : Widget> of(container: ILayoutableWidgetContainer, widget: T): ILayoutableWidget<T> = LayoutableWidget<T>(container, widget)
+		fun <T : Widget> of(container: ILayoutableWidgetContainer, widget: T): ILayoutableWidget<T> =
+			LayoutableWidget<T>(container, widget)
 	}
 }
 
@@ -30,5 +31,5 @@ private class LayoutableWidget<T : Widget>(
 ) : ILayoutableWidget<T> {
 	override val positionable = Layoutable()
 
-	override fun setPosition(position: Position) = widget.setPosition(position)
+	override fun setArea(area: Area) = widget.setArea(area)
 }

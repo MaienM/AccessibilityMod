@@ -26,7 +26,7 @@ abstract class BaseScreen(
 
 	override fun <T : Widget> add(widget: T) = addButton(widget)
 
-	override fun getPosition() = Position(0, 0, width, height)
+	override fun getArea() = Area(0, 0, width, height)
 
 	protected fun toScreen(screen: Screen) = minecraft!!.displayGuiScreen(screen)
 	protected fun toScreen(constructor: (Minecraft, Screen?) -> BaseScreen) = toScreen(constructor(minecraft!!, this))
@@ -44,7 +44,7 @@ abstract class BaseScreen(
 	}
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-		updatePositions()
+		updateAreas()
 		renderBackground()
 		super.render(mouseX, mouseY, partialT)
 	}

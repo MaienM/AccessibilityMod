@@ -1,8 +1,8 @@
 package com.maienm.accessibilitymod.gui.widgets
 
+import com.maienm.accessibilitymod.gui.helpers.Area
 import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidget
 import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidgetContainer
-import com.maienm.accessibilitymod.gui.helpers.Position
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.IGuiEventListener
 import net.minecraft.client.gui.INestedGuiEventHandler
@@ -21,7 +21,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 
 	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(it) }
 
-	override fun getPosition(): Position = Position(x, y, width, height)
+	override fun getArea(): Area = Area(x, y, width, height)
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
 		updatePositions()

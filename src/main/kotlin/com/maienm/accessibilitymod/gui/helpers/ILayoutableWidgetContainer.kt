@@ -1,7 +1,7 @@
 package com.maienm.accessibilitymod.gui.helpers
 
-import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
 import com.maienm.accessibilitymod.gui.widgets.TextWidget
+import com.maienm.accessibilitymod.gui.widgets.TextWidget.Alignment
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.client.gui.widget.button.Button
@@ -14,23 +14,18 @@ interface ILayoutableWidgetContainer {
 	val font: FontRenderer
 	val layoutableWidgets: MutableList<ILayoutableWidget<*>>
 
-	fun getPosition(): Position
+	fun getArea(): Area
 
 	fun <T : Widget> add(widget: T): T
 	fun <T : ILayoutableWidget<*>> add(wrapped: T): T = wrapped.also { layoutableWidgets.add(it) }
 	fun <T : Widget> layout(widget: T): ILayoutableWidget<T> =
 		ILayoutableWidget.of(this, add(widget)).also { layoutableWidgets.add(it) }
 
-	fun updatePositions() = layoutableWidgets.forEach(ILayoutableWidget<*>::updatePosition)
+	fun updateAreas() = layoutableWidgets.forEach(ILayoutableWidget<*>::updateArea)
 }
 
 fun <T : ILayoutableWidgetContainer> T.addButton(text: String, action: (GuiButtonExt) -> Unit) =
 	layout(GuiButtonExt(0, 0, 0, 0, text, Button.IPressable { action(it as GuiButtonExt) }))
 
-fun <T : ILayoutableWidgetContainer> T.addText(
-	text: String,
-	alignment: TextWidget.Alignment = TextWidget.Alignment.LEFT
-) = layout(TextWidget(font, text, alignment = alignment))
-
-fun <T : ILayoutableWidgetContainer, I> T.addList(items: List<I>, initializer: (I) -> Widget) =
-	layout(PaginatedListWidget(font, items, initializer = initializer))
+fun <T : ILayoutableWidgetContainer> T.addText(text: String, alignment: Alignment = Alignment.LEFT) =
+	layout(TextWidget(font, text, alignment = alignment))

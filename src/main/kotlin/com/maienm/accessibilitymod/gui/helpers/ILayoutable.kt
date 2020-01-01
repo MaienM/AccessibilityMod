@@ -39,7 +39,9 @@ fun <T : ILayoutable> T.setHeight(value: Int) = setY2(AbsoluteSizeSPC(value))
 fun <T : ILayoutable> T.setHeight(fraction: Double, offset: Int = 0) = setY2(FractionSizeSPC(fraction, offset))
 
 fun <T : ILayoutable> T.setX(x1: Int, x2: Int) = setX1(x1).setX2(x2)
+fun <T : ILayoutable> T.setX(x1: Double, x2: Double) = setX1(x1).setX2(x2)
 fun <T : ILayoutable> T.setY(y1: Int, y2: Int) = setY1(y1).setY2(y2)
+fun <T : ILayoutable> T.setY(y1: Double, y2: Double) = setY1(y1).setY2(y2)
 
 fun <T : ILayoutable> T.centerX(width: Int) = setX1(0.5, -width / 2).setX2(0.5, width / 2)
 fun <T : ILayoutable> T.centerX(width: Double) = setX1((1 - width) / 2).setX2((width - 1) / 2)
@@ -72,12 +74,12 @@ class Layoutable(
 		y2 = calculator
 	}
 
-	fun apply(parentPosition: Position): Position {
-		val x1 = parentPosition.x + x1.calculate(parentPosition.width)
-		val x2 = parentPosition.x + x2.calculate(parentPosition.width, x1)
-		val y1 = parentPosition.y + y1.calculate(parentPosition.height)
-		val y2 = parentPosition.y + y2.calculate(parentPosition.height, y1)
-		return Position(x1, y1, x2 - x1, y2 - y1)
+	fun toArea(parentArea: Area): Area {
+		val x1 = parentArea.x + x1.calculate(parentArea.width)
+		val x2 = parentArea.x + x2.calculate(parentArea.width, x1)
+		val y1 = parentArea.y + y1.calculate(parentArea.height)
+		val y2 = parentArea.y + y2.calculate(parentArea.height, y1)
+		return Area(x1, y1, x2 - x1, y2 - y1)
 	}
 }
 
