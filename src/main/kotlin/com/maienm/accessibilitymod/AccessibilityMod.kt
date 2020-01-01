@@ -11,6 +11,7 @@ import net.minecraftforge.fml.config.ModConfig
 @Mod(AccessibilityMod.ID)
 object AccessibilityMod {
 	const val ID = "accessibilitymod"
+	val DEBUG by lazy { System.getProperty("com.maienm.accessibilitymod.debug") != null }
 
 	init {
 		IItemMatcher.TypeRegistry.register("tag", TagItemMatcher.Companion::fromMap)
