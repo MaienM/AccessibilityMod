@@ -3,6 +3,8 @@ accessibilitymod:
       title: Accessibility Mod Config
       close: Return to main menu
       back: Back
+      edit: Edit
+      delete: Delete
       matchers:
          title: Item Overlay Matchers
          description:

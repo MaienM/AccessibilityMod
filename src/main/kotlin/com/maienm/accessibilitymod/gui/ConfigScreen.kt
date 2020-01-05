@@ -10,6 +10,7 @@ class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) : BaseScreen(minec
 		super.init()
 
 		addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
+		addButton(i18n("config.matchers.title")) { toScreen(::MatchersScreen) }.centerX(0.6).setY(50, 70)
 		addButton(i18n("config.close")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
 	}
 }
