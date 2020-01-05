@@ -16,6 +16,8 @@ open class ContainerWidget(override val font: FontRenderer) :
 	INestedGuiEventHandler,
 	ILayoutableWidgetContainer {
 
+	private var oldArea = Area(-1, -1, -1, -1)
+
 	protected val widgets: MutableList<Widget> = mutableListOf()
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 
@@ -24,8 +26,16 @@ open class ContainerWidget(override val font: FontRenderer) :
 	override fun getArea(): Area = Area(x, y, width, height)
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-		updatePositions()
+		val area = getArea()
+		if (area != oldArea) {
+			oldArea = area
+			onResize(oldArea, area)
+		}
 		widgets.forEach { it.render(mouseX, mouseY, partialT) }
+	}
+
+	open fun onResize(oldArea: Area, newArea: Area) {
+		updateAreas()
 	}
 
 	override fun children(): MutableList<out IGuiEventListener> = widgets
