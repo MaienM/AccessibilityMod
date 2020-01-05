@@ -1,10 +1,12 @@
 package com.maienm.accessibilitymod.gui.widgets
 
 import com.maienm.accessibilitymod.gui.helpers.*
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.widget.Widget
 import net.minecraftforge.fml.client.config.GuiButtonExt
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.Delegates
 
@@ -14,61 +16,106 @@ import kotlin.properties.Delegates
  * Each of the input items is shown as a widget, which is created by calling the initializer with said item.
  * If there are more items than fit on a single page, you will be able to switch between pages of widgets.
  *
- * Widgets are destroyed when switching pages, so make sure to store state in the items, not in the widgets!
+ * The widgets may be destroyed/recreated at any time, so make sure to store state in the items, not in the widgets!
+ *
+ * It attempts to fit as many rows and columns of widgets based on the minimum widget size and minimum spacing, up to the given maximums.
+ * The grow mode variables control what is done with the leftover space.
  */
 class PaginatedListWidget<T>(
 	font: FontRenderer,
 	items: List<T> = listOf(),
-	cols: Int = 1,
-	rows: Int = 1,
-	private val initializer: (T) -> Widget
+	minWidgetSize: Dimensions = Dimensions(1, 1),
+	growColumns: GrowMode = GrowMode.STRETCH,
+	growRows: GrowMode = GrowMode.NONE,
+	minColumnSpacing: Int = 0,
+	minRowSpacing: Int = 0,
+	maxColumns: Int = Int.MAX_VALUE,
+	maxRows: Int = Int.MAX_VALUE,
+	paginationHeight: Int = 20,
+	private val widgetCreator: (T) -> Widget
 ) : ContainerWidget(font) {
 	var needsUpdate = true
-	private inline fun <T> updateOnChange(initialValue: T, crossinline validate: (T) -> Boolean) =
+	private inline fun <T> updateOnChange(initialValue: T, crossinline validate: (T) -> Boolean = { true }) =
 		Delegates.vetoable(initialValue) { _, oldValue, newValue ->
-			validate(newValue).also {
-				needsUpdate = needsUpdate || (oldValue != newValue)
+			oldValue == newValue || validate(newValue).also {
+				needsUpdate = true
 			}
 		}
 
-	var rows by updateOnChange(rows) { it > 0 }
-	var cols by updateOnChange(cols) { it > 0 }
+	var items: List<T> by updateOnChange(items)
+	var minWidgetSize by updateOnChange(Dimensions(1, 1)) { it.width > 0 && it.height > 0 }
+	var growColumns by updateOnChange(growColumns)
+	var growRows by updateOnChange(growRows)
+	var minColumnSpacing by updateOnChange(0) { it >= 0 }
+	var minRowSpacing by updateOnChange(0) { it >= 0 }
+	var maxColumns by updateOnChange(Int.MAX_VALUE) { it > 0 }
+	var maxRows by updateOnChange(Int.MAX_VALUE) { it > 0 }
+	var paginationHeight by updateOnChange(20) { it > 1 }
 	var page by updateOnChange(1) { it in 1..pages }
-	var items: List<T> by updateOnChange(items) { true }
-	var paginationHeight = 20
-	var spacing = 0
 
 	private val paginationContainer: ILayoutableWidget<ContainerWidget>
 	private val paginationButtonPrev: ILayoutableWidget<GuiButtonExt>
 	private val paginationText: ILayoutableWidget<TextWidget>
 	private val paginationButtonNext: ILayoutableWidget<GuiButtonExt>
 
+	private var rows = 1
+	private var columns = 1
+	private var rowSpacing = 0
+	private var columnSpacing = 0
+	private var widgetWidth = 1
+	private var widgetHeight = 1
 	private var pages = 0
 	private var itemWidgets: List<Widget> = listOf()
 
 	init {
-		paginationContainer = layout(ContainerWidget(font)).centerX(0.6).setY1(-paginationHeight)
+		this.minWidgetSize = minWidgetSize
+		this.minColumnSpacing = minColumnSpacing
+		this.minRowSpacing = minRowSpacing
+		this.maxColumns = maxColumns
+		this.maxRows = maxRows
+		this.paginationHeight = paginationHeight
+
+		paginationContainer = layout(ContainerWidget(font))
 		paginationButtonPrev = paginationContainer.widget.addButton("<<") { page -= 1 }.setX1(0.0).setX2(0.5, -25)
-		paginationText = paginationContainer.widget
-			.addText("0/0", TextWidget.Alignment.CENTER)
-			.centerX(50)
-			.setY1((20 - font.FONT_HEIGHT) / 2)
+		paginationText = paginationContainer.widget.addText("0/0", TextWidget.Alignment.CENTER).centerX(50)
 		paginationButtonNext = paginationContainer.widget.addButton(">>") { page += 1 }.setX1(0.5, 25).setX2(1.0)
 	}
 
+	override fun onResize(oldArea: Area, newArea: Area) {
+		super.onResize(oldArea, newArea)
+		needsUpdate = true
+	}
+
 	private fun updateWidgets() {
-		val pageSize = rows * cols
-		pages = ceil(items.size / pageSize.toFloat()).toInt()
-		if (page > pages) {
-			page = pages
+		rows = clamp((height - paginationHeight + minRowSpacing) / (minWidgetSize.height + minRowSpacing), 1, maxRows)
+		columns = clamp(width / (minWidgetSize.width + minColumnSpacing), 1, maxColumns)
+
+		widgetHeight = minWidgetSize.height
+		rowSpacing = minRowSpacing
+		val rowRemainder = height - paginationHeight - ((widgetHeight + rowSpacing) * rows)
+		when (growRows) {
+			GrowMode.STRETCH -> widgetHeight += rowRemainder / rows
+			GrowMode.SPACING -> rowSpacing += rowRemainder / rows
 		}
+
+		widgetWidth = minWidgetSize.width
+		columnSpacing = minColumnSpacing
+		val columnRemainder = width - ((widgetWidth + columnSpacing) * columns) + columnSpacing
+		when (growColumns) {
+			GrowMode.STRETCH -> widgetWidth += columnRemainder / columns
+			GrowMode.SPACING -> columnSpacing += columnRemainder / (columns - 1)
+		}
+
+		val pageSize = rows * columns
+		pages = ceil(items.size / pageSize.toFloat()).toInt()
+		page = min(page, pages)
+
 		widgets.removeAll(itemWidgets)
-		itemWidgets = items.subList((page - 1) * pageSize, min(page * pageSize, items.size - 1)).map(initializer)
+		itemWidgets = items.subList((page - 1) * pageSize, min(page * pageSize, items.size - 1)).map(widgetCreator)
 		widgets.addAll(itemWidgets)
 
 		paginationButtonPrev.widget.active = page > 1
 		paginationText.widget.message = "$page/$pages"
-		paginationButtonNext.widget.active = page < pages
 
 		needsUpdate = false
 	}
@@ -78,19 +125,35 @@ class PaginatedListWidget<T>(
 			updateWidgets()
 		}
 
-		val widgetWidth = (width - (cols - 1) * spacing) / cols
-		val widgetHeight = (height - paginationHeight) / rows - spacing
+		val minecraft = Minecraft.getInstance()
+		renderHoleBackground(minecraft, getArea())
+
 		itemWidgets.forEachIndexed { i, widget ->
-			widget.setPosition(
-				Position(
-					x + (i % cols) * (widgetWidth + spacing),
-					y + (i / cols) * (widgetHeight + spacing),
+			widget.setArea(
+				Area(
+					x + (i % columns) * (widgetWidth + columnSpacing),
+					y + (i / columns) * (widgetHeight + rowSpacing),
 					widgetWidth,
 					widgetHeight
 				)
 			)
+			renderHoleBackground(minecraft, widget.getArea(), 20)
 		}
+
+		paginationContainer.setY1(-paginationHeight)
+		paginationText.setY1((paginationHeight - font.FONT_HEIGHT) / 2)
 
 		super.render(mouseX, mouseY, partialT)
 	}
+
+	enum class GrowMode {
+		/** Don't fill up extra space with anything, just leave it at the end. */
+		NONE,
+		/** Stretch widgets to fill up extra space. */
+		STRETCH,
+		/** Increase spacing between widgets to fill up extra space. */
+		SPACING
+	}
 }
+
+private fun clamp(value: Int, minValue: Int, maxValue: Int) = min(max(value, minValue), maxValue)
