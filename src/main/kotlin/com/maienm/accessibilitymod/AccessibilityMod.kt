@@ -1,6 +1,6 @@
 package com.maienm.accessibilitymod
 
-import com.maienm.accessibilitymod.gui.ConfigScreen
+import com.maienm.accessibilitymod.gui.screens.ConfigScreen
 import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import com.maienm.accessibilitymod.items.matchers.TagItemMatcher
 import io.opencubes.boxlin.adapter.BoxlinContext

@@ -1,4 +1,4 @@
-package com.maienm.accessibilitymod.gui
+package com.maienm.accessibilitymod.gui.screens
 
 import com.maienm.accessibilitymod.Config
 import com.maienm.accessibilitymod.gui.helpers.*
