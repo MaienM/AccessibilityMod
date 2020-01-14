@@ -25,12 +25,15 @@ open class ContainerWidget(override val font: FontRenderer) :
 
 	override fun getArea(): Area = Area(x, y, width, height)
 
+	open fun renderBackground() {}
+
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
 		val area = getArea()
 		if (area != oldArea) {
 			oldArea = area
 			onResize(oldArea, area)
 		}
+		renderBackground()
 		widgets.forEach { it.render(mouseX, mouseY, partialT) }
 	}
 

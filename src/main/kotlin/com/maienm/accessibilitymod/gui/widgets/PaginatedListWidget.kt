@@ -53,6 +53,12 @@ class PaginatedListWidget<T>(
 	var paginationHeight by updateOnChange(20) { it > 1 }
 	var page by updateOnChange(1) { it in 1..pages }
 
+	private val pageSize: Int
+		get() = rows * columns
+
+	private val currentItems: List<T>
+		get() = items.subList((page - 1) * pageSize, min(page * pageSize, items.size - 1))
+
 	private val paginationContainer: ILayoutableWidget<ContainerWidget>
 	private val paginationButtonPrev: ILayoutableWidget<GuiButtonExt>
 	private val paginationText: ILayoutableWidget<TextWidget>
@@ -65,6 +71,7 @@ class PaginatedListWidget<T>(
 	private var widgetWidth = 1
 	private var widgetHeight = 1
 	private var pages = 0
+	private var itemWidgetItems: List<T> = listOf()
 	private var itemWidgets: List<Widget> = listOf()
 
 	init {
@@ -106,12 +113,12 @@ class PaginatedListWidget<T>(
 			GrowMode.SPACING -> columnSpacing += columnRemainder / (columns - 1)
 		}
 
-		val pageSize = rows * columns
 		pages = ceil(items.size / pageSize.toFloat()).toInt()
 		page = min(page, pages)
 
 		widgets.removeAll(itemWidgets)
-		itemWidgets = items.subList((page - 1) * pageSize, min(page * pageSize, items.size - 1)).map(widgetCreator)
+		itemWidgetItems = currentItems.toList()
+		itemWidgets = itemWidgetItems.map(widgetCreator)
 		widgets.addAll(itemWidgets)
 
 		paginationButtonPrev.widget.active = page > 1
@@ -120,13 +127,16 @@ class PaginatedListWidget<T>(
 		needsUpdate = false
 	}
 
+	override fun renderBackground() {
+		val minecraft = Minecraft.getInstance()
+		renderBackground(minecraft, getArea())
+		itemWidgets.forEach { renderBackground(minecraft, it.getArea(), 20) }
+	}
+
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-		if (needsUpdate) {
+		if (needsUpdate || currentItems != itemWidgetItems) {
 			updateWidgets()
 		}
-
-		val minecraft = Minecraft.getInstance()
-		renderHoleBackground(minecraft, getArea())
 
 		itemWidgets.forEachIndexed { i, widget ->
 			widget.setArea(
@@ -137,7 +147,6 @@ class PaginatedListWidget<T>(
 					widgetHeight
 				)
 			)
-			renderHoleBackground(minecraft, widget.getArea(), 20)
 		}
 
 		paginationContainer.setY1(-paginationHeight)

@@ -15,11 +15,13 @@ private fun render(minecraft: Minecraft, action: (Tessellator) -> Unit) {
 	action(tessellator)
 }
 
-private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Double, height: Double, color: Int) {
+private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Double, height: Double, shadeColor: Int) {
 	val bufferbuilder = tessellator.buffer
 
-	fun vertex(x: Double, y: Double) =
-		bufferbuilder.pos(x, y, 0.0).tex(x / 32.0f, y / 32.0f).color(color, color, color, 255).endVertex()
+	fun vertex(x: Double, y: Double) = bufferbuilder
+		.pos(x, y, 0.0)
+		.tex(x / 32.0f, y / 32.0f)
+		.color(shadeColor, shadeColor, shadeColor, 255).endVertex()
 
 	bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR)
 	vertex(x, y + height)
@@ -29,15 +31,15 @@ private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Do
 	tessellator.draw()
 }
 
-fun renderHoleBackground(minecraft: Minecraft, area: Area, color: Int = 32) =
-	renderHoleBackground(minecraft, area.x, area.y, area.width, area.height, color)
+fun renderBackground(minecraft: Minecraft, area: Area, shadeColor: Int = 32) =
+	renderBackground(minecraft, area.x, area.y, area.width, area.height, shadeColor)
 
-fun renderHoleBackground(minecraft: Minecraft, x: Int, y: Int, width: Int, height: Int, color: Int = 32) =
-	renderHoleBackground(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), color)
+fun renderBackground(minecraft: Minecraft, x: Int, y: Int, width: Int, height: Int, shadeColor: Int = 32) =
+	renderBackground(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), shadeColor)
 
-fun renderHoleBackground(minecraft: Minecraft, x: Double, y: Double, width: Double, height: Double, color: Int = 32) {
+fun renderBackground(minecraft: Minecraft, x: Double, y: Double, width: Double, height: Double, shadeColor: Int = 32) {
 	render(minecraft) {
-		renderRect(it, x, y, width, height, color)
+		renderRect(it, x, y, width, height, shadeColor)
 	}
 }
 
