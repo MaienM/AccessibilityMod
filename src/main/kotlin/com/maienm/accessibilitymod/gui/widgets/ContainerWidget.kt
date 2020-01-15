@@ -21,7 +21,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 	protected val widgets: MutableList<Widget> = mutableListOf()
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 
-	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(it) }
+	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(0, it) }
 	override fun <T : Widget> remove(widget: T) { widgets.remove(widget) }
 
 	override fun getArea(): Area = Area(x, y, width, height)
@@ -35,7 +35,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 			onResize(oldArea, area)
 		}
 		renderBackground()
-		widgets.forEach { it.render(mouseX, mouseY, partialT) }
+		widgets.reversed().forEach { it.render(mouseX, mouseY, partialT) }
 	}
 
 	open fun onResize(oldArea: Area, newArea: Area) {
