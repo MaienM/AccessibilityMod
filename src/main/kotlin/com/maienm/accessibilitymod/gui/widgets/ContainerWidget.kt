@@ -22,6 +22,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 
 	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(it) }
+	override fun <T : Widget> remove(widget: T) { widgets.remove(widget) }
 
 	override fun getArea(): Area = Area(x, y, width, height)
 

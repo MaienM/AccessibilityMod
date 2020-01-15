@@ -17,9 +17,18 @@ interface ILayoutableWidgetContainer {
 	fun getArea(): Area
 
 	fun <T : Widget> add(widget: T): T
-	fun <T : ILayoutableWidget<*>> add(wrapped: T): T = wrapped.also { layoutableWidgets.add(it) }
 	fun <T : Widget> layout(widget: T): ILayoutableWidget<T> =
-		ILayoutableWidget.of(this, add(widget)).also { layoutableWidgets.add(it) }
+		ILayoutableWidget.of(this, add(widget)).also { layoutableWidgets.add(it); it.updateArea() }
+
+	fun <T : Widget> remove(widget: T)
+	fun <T : Widget> unlayout(widget: T) {
+		layoutableWidgets.removeIf { it.widget == widget }
+		remove(widget)
+	}
+	fun <T : Widget, L : ILayoutableWidget<T>> unlayout(layoutable: L) {
+		layoutableWidgets.remove(layoutable)
+		remove(layoutable.widget)
+	}
 
 	fun updateAreas() = layoutableWidgets.forEach(ILayoutableWidget<*>::updateArea)
 }

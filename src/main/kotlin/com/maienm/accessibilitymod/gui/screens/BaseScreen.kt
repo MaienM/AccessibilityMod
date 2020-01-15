@@ -25,6 +25,10 @@ abstract class BaseScreen(
 	}
 
 	override fun <T : Widget> add(widget: T) = addButton(widget)
+	override fun <T : Widget> remove(widget: T) {
+		buttons.remove(widget)
+		children.remove(widget)
+	}
 
 	override fun getArea() = Area(0, 0, width, height)
 
