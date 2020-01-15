@@ -3,14 +3,20 @@ accessibilitymod:
       title: Accessibility Mod Config
       close: Return to main menu
       back: Back
+
       edit: Edit
       delete: Delete
+      delete-confirm: Delete
+      delete-cancel: Cancel
+
       matchers:
          title: Item Overlay Matchers
          description:
             The matchers are ways to determine the material of an item.
 
             This is primarily done by pattern matching on properties like id and tags.
+         confirm-delete: Are you sure you want to delete this matcher?
+
       mapping:
          title: Item Overlay Mappings
          description:
@@ -20,6 +26,7 @@ accessibilitymod:
             Because of this these material names are not shown directly.
             Instead, this mapping is used to determine the text to show for each material.
             If a material is not in this mapping, no overlay will be shown for it.
+
    gui.matchers:
       tag:
          name: Tag-based Item Matcher
