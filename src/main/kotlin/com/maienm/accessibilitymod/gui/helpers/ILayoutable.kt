@@ -18,8 +18,9 @@ fun <T : ILayoutable> T.setX1(fraction: Double, offset: Int = 0) = setX1(Fractio
 fun <T : ILayoutable> T.setX1(calculation: (Int) -> Int) = setX1(CustomFPC(calculation))
 
 fun <T : ILayoutable> T.setX2(calculator: ISecondPositionCalculator) = apply { doSetX2(calculator) }
-fun <T : ILayoutable> T.setX2(value: Int) = setX2(AbsoluteSPC(value))
-fun <T : ILayoutable> T.setX2(fraction: Double, offset: Int = 0) = setX2(FractionSPC(fraction, offset))
+fun <T : ILayoutable> T.setX2(calculator: IFirstPositionCalculator) = setX2(FPCAsSPC(calculator))
+fun <T : ILayoutable> T.setX2(value: Int) = setX2(AbsoluteFPC(value))
+fun <T : ILayoutable> T.setX2(fraction: Double, offset: Int = 0) = setX2(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setX2(calculation: (Int, Int) -> Int) = setX2(CustomSPC(calculation))
 fun <T : ILayoutable> T.setX2(calculation: (Int) -> Int) = setX2(CustomSPC { dim, _ -> calculation(dim) })
 fun <T : ILayoutable> T.setWidth(value: Int) = setX2(AbsoluteSizeSPC(value))
@@ -31,8 +32,9 @@ fun <T : ILayoutable> T.setY1(fraction: Double, offset: Int = 0) = setY1(Fractio
 fun <T : ILayoutable> T.setY1(calculation: (Int) -> Int) = setY1(CustomFPC(calculation))
 
 fun <T : ILayoutable> T.setY2(calculator: ISecondPositionCalculator) = apply { doSetY2(calculator) }
-fun <T : ILayoutable> T.setY2(value: Int) = setY2(AbsoluteSPC(value))
-fun <T : ILayoutable> T.setY2(fraction: Double, offset: Int = 0) = setY2(FractionSPC(fraction, offset))
+fun <T : ILayoutable> T.setY2(calculator: IFirstPositionCalculator) = setY2(FPCAsSPC(calculator))
+fun <T : ILayoutable> T.setY2(value: Int) = setY2(AbsoluteFPC(value))
+fun <T : ILayoutable> T.setY2(fraction: Double, offset: Int = 0) = setY2(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setY2(calculation: (Int, Int) -> Int) = setY2(CustomSPC(calculation))
 fun <T : ILayoutable> T.setY2(calculation: (Int) -> Int) = setY2(CustomSPC { dim, _ -> calculation(dim) })
 fun <T : ILayoutable> T.setHeight(value: Int) = setY2(AbsoluteSizeSPC(value))
@@ -54,9 +56,9 @@ fun <T : ILayoutable> T.centerY(height: Double) = setY1((1 - height) / 2).setY2(
  */
 class Layoutable(
 	private var x1: IFirstPositionCalculator = FractionFPC(0.0),
-	private var x2: ISecondPositionCalculator = FractionSPC(1.0),
+	private var x2: ISecondPositionCalculator = FPCAsSPC(FractionFPC(1.0)),
 	private var y1: IFirstPositionCalculator = FractionFPC(0.0),
-	private var y2: ISecondPositionCalculator = FractionSPC(1.0)
+	private var y2: ISecondPositionCalculator = FPCAsSPC(FractionFPC(1.0))
 ) : ILayoutable {
 	override fun doSetX1(calculator: IFirstPositionCalculator) {
 		x1 = calculator
@@ -106,29 +108,22 @@ private class CustomFPC(val calculation: (Int) -> Int) : IFirstPositionCalculato
 // Calculation of x2 and y2
 
 interface ISecondPositionCalculator {
-	fun calculate(dimension: Int, firstPositon: Int): Int
+	fun calculate(dimension: Int, firstPosition: Int): Int
 }
 
-private class AbsoluteSPC(val value: Int) : ISecondPositionCalculator {
-	private val calculator = AbsoluteFPC(value)
-	override fun calculate(dimension: Int, firstPositon: Int): Int = calculator.calculate(dimension)
-}
-
-private class FractionSPC(val fraction: Double, val offset: Int = 0) : ISecondPositionCalculator {
-	private val calculator = FractionFPC(fraction, offset)
-	override fun calculate(dimension: Int, firstPositon: Int): Int = calculator.calculate(dimension)
+private class FPCAsSPC(val fpc: IFirstPositionCalculator) : ISecondPositionCalculator {
+	override fun calculate(dimension: Int, firstPosition: Int): Int = fpc.calculate(dimension)
 }
 
 private class CustomSPC(val calculation: (Int, Int) -> Int) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPositon: Int): Int = calculation(dimension, firstPositon)
+	override fun calculate(dimension: Int, firstPosition: Int): Int = calculation(dimension, firstPosition)
 }
 
 private class AbsoluteSizeSPC(val size: Int) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPositon: Int): Int = firstPositon + size
+	override fun calculate(dimension: Int, firstPosition: Int): Int = firstPosition + size
 }
 
 private class FractionSizeSPC(val fraction: Double, val offset: Int = 0) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPositon: Int): Int =
-		firstPositon + (fraction * dimension).toInt() + offset
+	override fun calculate(dimension: Int, firstPosition: Int): Int =
+		firstPosition + (fraction * dimension).toInt() + offset
 }
-
