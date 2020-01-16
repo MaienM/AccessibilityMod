@@ -1,5 +1,7 @@
 package com.maienm.accessibilitymod.gui.helpers
 
+import net.minecraft.client.gui.widget.Widget
+
 /**
  * Interface for a UI element that has flexible positioning rules.
  *
@@ -12,10 +14,15 @@ interface ILayoutable {
 	fun doSetY2(calculator: ISecondPositionCalculator)
 }
 
+enum class XEdge { LEFT, RIGHT }
+enum class YEdge { TOP, BOTTOM }
+
 fun <T : ILayoutable> T.setX1(calculator: IFirstPositionCalculator) = apply { doSetX1(calculator) }
 fun <T : ILayoutable> T.setX1(value: Int) = setX1(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setX1(fraction: Double, offset: Int = 0) = setX1(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setX1(calculation: (Int) -> Int) = setX1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setX1(widget: Widget, edge: XEdge = XEdge.RIGHT, offset: Int = 0) =
+	setX1(RelativeXFPC(widget, edge, offset))
 
 fun <T : ILayoutable> T.setX2(calculator: ISecondPositionCalculator) = apply { doSetX2(calculator) }
 fun <T : ILayoutable> T.setX2(calculator: IFirstPositionCalculator) = setX2(FPCAsSPC(calculator))
@@ -23,6 +30,9 @@ fun <T : ILayoutable> T.setX2(value: Int) = setX2(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setX2(fraction: Double, offset: Int = 0) = setX2(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setX2(calculation: (Int, Int) -> Int) = setX2(CustomSPC(calculation))
 fun <T : ILayoutable> T.setX2(calculation: (Int) -> Int) = setX2(CustomSPC { dim, _ -> calculation(dim) })
+fun <T : ILayoutable> T.setX2(widget: Widget, edge: XEdge = XEdge.RIGHT, offset: Int = 0) =
+	setX2(RelativeXFPC(widget, edge, offset))
+
 fun <T : ILayoutable> T.setWidth(value: Int) = setX2(AbsoluteSizeSPC(value))
 fun <T : ILayoutable> T.setWidth(fraction: Double, offset: Int = 0) = setX2(FractionSizeSPC(fraction, offset))
 
@@ -30,6 +40,8 @@ fun <T : ILayoutable> T.setY1(calculator: IFirstPositionCalculator) = apply { do
 fun <T : ILayoutable> T.setY1(value: Int) = setY1(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setY1(fraction: Double, offset: Int = 0) = setY1(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setY1(calculation: (Int) -> Int) = setY1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setY1(widget: Widget, edge: YEdge = YEdge.BOTTOM, offset: Int = 0) =
+	setY1(RelativeYFPC(widget, edge, offset))
 
 fun <T : ILayoutable> T.setY2(calculator: ISecondPositionCalculator) = apply { doSetY2(calculator) }
 fun <T : ILayoutable> T.setY2(calculator: IFirstPositionCalculator) = setY2(FPCAsSPC(calculator))
@@ -37,6 +49,9 @@ fun <T : ILayoutable> T.setY2(value: Int) = setY2(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setY2(fraction: Double, offset: Int = 0) = setY2(FractionFPC(fraction, offset))
 fun <T : ILayoutable> T.setY2(calculation: (Int, Int) -> Int) = setY2(CustomSPC(calculation))
 fun <T : ILayoutable> T.setY2(calculation: (Int) -> Int) = setY2(CustomSPC { dim, _ -> calculation(dim) })
+fun <T : ILayoutable> T.setY2(widget: Widget, edge: YEdge = YEdge.BOTTOM, offset: Int = 0) =
+	setY2(RelativeYFPC(widget, edge, offset))
+
 fun <T : ILayoutable> T.setHeight(value: Int) = setY2(AbsoluteSizeSPC(value))
 fun <T : ILayoutable> T.setHeight(fraction: Double, offset: Int = 0) = setY2(FractionSizeSPC(fraction, offset))
 
@@ -99,6 +114,14 @@ private class AbsoluteFPC(val value: Int) : IFirstPositionCalculator {
 
 private class FractionFPC(val fraction: Double, val offset: Int = 0) : IFirstPositionCalculator {
 	override fun calculate(dimension: Int): Int = wrap((fraction * dimension + offset).toInt(), dimension)
+}
+
+private class RelativeXFPC(val widget: Widget, val edge: XEdge, val offset: Int = 0) : IFirstPositionCalculator {
+	override fun calculate(dimension: Int): Int = widget.x + (if (edge == XEdge.RIGHT) widget.width else 0) + offset
+}
+
+private class RelativeYFPC(val widget: Widget, val edge: YEdge, val offset: Int = 0) : IFirstPositionCalculator {
+	override fun calculate(dimension: Int): Int = widget.y + (if (edge == YEdge.BOTTOM) widget.height else 0) + offset
 }
 
 private class CustomFPC(val calculation: (Int) -> Int) : IFirstPositionCalculator {
