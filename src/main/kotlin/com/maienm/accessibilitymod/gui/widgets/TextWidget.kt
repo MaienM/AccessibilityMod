@@ -25,6 +25,7 @@ class TextWidget(
 			}
 			yOffset += (PARAGRAPH_SPACING - LINE_SPACING) * height
 		}
+		this.height = yOffset.toInt()
 	}
 
 	private fun renderLine(line: String, yOffset: Float) {
@@ -34,6 +35,12 @@ class TextWidget(
 			Alignment.RIGHT -> (width - font.getStringWidth(line)).toFloat()
 		}
 		font.drawStringWithShadow(line, x + xOffset, y + yOffset, color)
+	}
+
+	fun updateHeight() = render(-Int.MAX_VALUE, -Int.MAX_VALUE, 0f)
+
+	override fun setHeight(value: Int) {
+		// Auto-determined, so don't actually set.
 	}
 
 	override fun clicked(p_clicked_1_: Double, p_clicked_3_: Double): Boolean = false
