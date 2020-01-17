@@ -35,8 +35,6 @@ abstract class BaseScreen(
 	protected fun toScreen(screen: Screen) = minecraft!!.displayGuiScreen(screen)
 	protected fun toScreen(constructor: (Minecraft, Screen?) -> BaseScreen) = toScreen(constructor(minecraft!!, this))
 
-	protected fun i18n(key: String) = I18n.format("$I18N_PREFIX.$key")
-
 	override fun init() {
 		super.init()
 
@@ -63,5 +61,6 @@ abstract class BaseScreen(
 
 	companion object {
 		const val I18N_PREFIX = "accessibilitymod.gui"
+		fun i18n(key: String) = I18n.format("$I18N_PREFIX.$key")
 	}
 }

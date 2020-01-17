@@ -33,8 +33,8 @@ interface ILayoutableWidgetContainer {
 	fun updateAreas() = layoutableWidgets.forEach(ILayoutableWidget<*>::updateArea)
 }
 
-fun <T : ILayoutableWidgetContainer> T.addButton(text: String, action: (GuiButtonExt) -> Unit) =
-	layout(GuiButtonExt(0, 0, 0, 0, text, Button.IPressable { action(it as GuiButtonExt) }))
+fun <T : ILayoutableWidgetContainer> T.addButton(text: String, action: () -> Unit) =
+	layout(GuiButtonExt(0, 0, 0, 0, text, Button.IPressable { action() }))
 
 fun <T : ILayoutableWidgetContainer> T.addText(text: String, alignment: Alignment = Alignment.LEFT) =
 	layout(TextWidget(font, text, alignment = alignment))

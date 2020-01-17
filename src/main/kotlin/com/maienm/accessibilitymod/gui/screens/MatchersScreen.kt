@@ -5,17 +5,19 @@ import com.maienm.accessibilitymod.gui.helpers.*
 import com.maienm.accessibilitymod.gui.widgets.ContainerWidget
 import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
 import com.maienm.accessibilitymod.gui.widgets.TextWidget
+import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.button.Button
+import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraftforge.fml.client.config.GuiButtonExt
 import org.apache.logging.log4j.LogManager
 import com.electronwill.nightconfig.core.Config as NCConfig
 
 class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	BaseScreen(minecraft, lastScreen, "config.matchers.title") {
 
-	lateinit var list: PaginatedListWidget<NCConfig>
+	private lateinit var list: PaginatedListWidget<NCConfig>
 
 	override fun init() {
 		super.init()
@@ -34,14 +36,17 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		layout(list).centerX(0.6).setY(80, -40)
 	}
 
+	/**
+	 * Widget for a single matcher in the listing. Has buttons to delete/edit.
+	 */
 	inner class MatcherEntry(font: FontRenderer, private val matcher: NCConfig) : ContainerWidget(font) {
 		private var deleteConfirm: ILayoutableWidget<DeleteConfirm>? = null
 
 		init {
 			val type: String = matcher["type"]
 			addText(i18n("matchers.$type.name")).setX1(3).setY1(3)
-			matcher.valueMap().entries.filter { it.key != "type" }.forEachIndexed { i, entry ->
-				addText("${i18n("matchers.$type.${entry.key}")}: ${entry.value}")
+			IItemMatcher.TypeRegistry.entry(type).fields.entries.forEachIndexed { i, (key, i18nKey) ->
+				addText("${i18n(i18nKey)}: ${matcher.get<String>(key)}")
 					.setX1(3)
 					.setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT)
 			}
@@ -49,35 +54,153 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			addButton(i18n("config.delete"), ::delete).setX1(-0.2).setX2(-2).setY1(0.5, 1).setY2(-2)
 		}
 
-		private fun edit(button: Button) {}
+		private fun edit() {
+			toScreen(EditScreen(minecraft!!, this@MatchersScreen, matcher))
+		}
 
-		private fun delete(button: Button) {
+		private fun delete() {
 			deleteConfirm?.also { unlayout(it) }
 			deleteConfirm = layout(DeleteConfirm(font, matcher) { deleteConfirm?.also { unlayout(it) } })
 		}
 	}
 
+	/**
+	 * Widget to confirm/cancel a deletion. Meant to be rendered on top of a MatcherEntry.
+	 */
 	inner class DeleteConfirm(font: FontRenderer, private val matcher: NCConfig, private val close: () -> Unit) :
 		ContainerWidget(font) {
 
 		init {
-			addText("config.matchers.confirm-delete", TextWidget.Alignment.CENTER).setX1(5)
+			addText(i18n("config.matchers.confirm-delete"), TextWidget.Alignment.CENTER).setY1(5)
 			addButton(i18n("config.delete-confirm"), ::confirm).setX1(2).setX2(0.5, -2).setY(-22, -2)
 			addButton(i18n("config.delete-cancel"), ::cancel).setX1(0.5, 2).setX2(-2).setY(-22, -2)
 		}
 
-		private fun confirm(button: Button) {
+		private fun confirm() {
 			Config.ItemMaterialOverlay.matchers.remove(matcher)
 			close()
 		}
 
-		private fun cancel(button: Button) {
+		private fun cancel() {
 			close()
 		}
 
 		override fun renderBackground() {
 			super.renderBackground()
-			renderBackground(minecraft!!, getArea())
+			renderBackground(minecraft!!, getArea(), 20)
+		}
+	}
+
+	/**
+	 * Screen to create/edit a matcher.
+	 */
+	inner class EditScreen(minecraft: Minecraft, lastScreen: Screen?, private val matcher: NCConfig) :
+		BaseScreen(
+			minecraft,
+			lastScreen,
+			"config.matchers.edit.title-${if (matcher.size() == 1) "new" else "existing"}"
+		) {
+
+		private val type: String = matcher["type"]
+
+		private val textWidgets: Map<String, TextFieldWidget> by lazy {
+			IItemMatcher.TypeRegistry.entry(type).fields.mapValues { (_, i18nKey) ->
+				TextFieldWidget(minecraft.fontRenderer, 0, 0, 0, 0, null, i18n(i18nKey))
+			}
+		}
+		private val generalValidationWidget = TextWidget(minecraft.fontRenderer, "")
+		private val validationWidgets: Map<String, TextWidget> by lazy {
+			IItemMatcher.TypeRegistry.entry(type).fields.mapValues {
+				TextWidget(minecraft.fontRenderer, "")
+			}
+		}
+		private lateinit var saveButton: GuiButtonExt
+
+		private val data: MutableMap<String, Any> = HashMap(matcher.valueMap())
+		private val needsUpdate: Boolean
+			get() = textWidgets.any { (key, widget) -> data[key] != widget.text }
+
+		private var validationResult: IItemMatcher.Validator.Result? = null
+		private val valid: Boolean
+			get() = validationResult?.isValid() ?: false
+
+		init {
+			textWidgets.forEach { (key, field) -> field.text = data[key] as String }
+		}
+
+		override fun init() {
+			super.init()
+
+			addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
+			layout(generalValidationWidget).centerX(0.5).setY1(40)
+
+			var relativeTo = generalValidationWidget
+			val textOffset = 10 - minecraft!!.fontRenderer.FONT_HEIGHT / 2
+			IItemMatcher.TypeRegistry.entry(type).fields.entries.forEachIndexed { i, (key, i18nKey) ->
+				val textWidget = textWidgets[key] ?: return
+				val validationWidget = validationWidgets[key] ?: return
+
+				// Position relative to the bottom of the validation message above, to allow repositioning when validation errors are shown.
+				val fieldLayout = layout(textWidget)
+					.setX(0.3, 0.8)
+					.setY1(relativeTo, offset = if (i == 0) 10 else 3)
+					.setHeight(20)
+				textWidget.moveCursorBy(0) // Without this the text isn't rendered until you focus the box.
+
+				// Label to the left and slightly down, to center it vertically.
+				addText("${i18n(i18nKey)}:").setX1(0.2).setY1(fieldLayout.widget, YEdge.TOP, textOffset)
+
+				// Validation text below the input. Keep reference to position the next element relative to it.
+				layout(validationWidget).setX(0.3, 0.8).setY1(textWidget, offset = 3)
+				relativeTo = validationWidget
+			}
+
+			addButton(i18n("config.edit-cancel")) { toScreen(lastScreen!!) }.setX1(0.3).setX2(0.5, -1).setY(-30, -10)
+			saveButton = addButton(i18n("config.edit-save"), ::save).setX1(0.5, 1).setX2(0.7).setY(-30, -10).widget
+
+			validate()
+		}
+
+		private fun validate() {
+			if (!needsUpdate) {
+				return
+			}
+
+			textWidgets.forEach { (key, field) -> data[key] = field.text }
+			val result = IItemMatcher.TypeRegistry.validate(data)
+			if (validationResult == result) {
+				return
+			}
+
+			applyValidationResult(result)
+			updateAreas()
+		}
+
+		private fun applyValidationResult(result: IItemMatcher.Validator.Result) {
+			validationResult = result
+			validationWidgets.forEach { (key, text) ->
+				text.message = result.get(key).joinToString("\n")
+				text.updateHeight()
+			}
+			generalValidationWidget.message = result.getMissed().joinToString("\n")
+			generalValidationWidget.updateHeight()
+			saveButton.active = valid
+		}
+
+		private fun save() {
+			if (!valid) {
+				return
+			}
+			matcher.valueMap().putAll(data)
+			if (!Config.ItemMaterialOverlay.matchers.contains(matcher)) {
+				Config.ItemMaterialOverlay.matchers.add(matcher)
+			}
+			toScreen(lastScreen!!)
+		}
+
+		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
+			validate()
+			super.render(mouseX, mouseY, partialT)
 		}
 	}
 

@@ -18,7 +18,8 @@ object AccessibilityMod {
 	val DEBUG by lazy { System.getProperty("com.maienm.accessibilitymod.debug") != null }
 
 	init {
-		IItemMatcher.TypeRegistry.register("tag", TagItemMatcher.Companion::fromMap)
+		IItemMatcher.TypeRegistry
+			.register("tag", TagItemMatcher.FIELDS, TagItemMatcher.Companion::fromMap, TagItemMatcher.VALIDATOR)
 
 		val modLoadingContext = ModLoadingContext.get()
 		modLoadingContext.registerConfig(ModConfig.Type.CLIENT, Config.spec)

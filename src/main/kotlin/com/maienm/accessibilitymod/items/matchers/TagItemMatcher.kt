@@ -1,9 +1,11 @@
 package com.maienm.accessibilitymod.items.matchers
 
+import com.maienm.accessibilitymod.items.matchers.IItemMatcher.Companion.i18n
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 import kotlin.streams.toList
 
 /**
@@ -21,5 +23,24 @@ class TagItemMatcher(pattern: String) : IItemMatcher {
 
 	companion object {
 		fun fromMap(map: Map<String, Any>) = TagItemMatcher(map.get("pattern").toString())
+
+		val FIELDS = mapOf("pattern" to "matchers.tag.pattern")
+
+		val VALIDATOR = object: IItemMatcher.Validator() {
+			init {
+				setValidator("pattern", validator = ::validatePattern)
+			}
+
+			fun validatePattern(value: Any) = sequence<String> {
+				try {
+					val pattern = value.toString().toPattern()
+					if (pattern.matcher("").groupCount() != 1) {
+						yield(i18n("tag.errors.pattern-num-capture-groups"))
+					}
+				} catch (e: PatternSyntaxException) {
+					yield(i18n("tag.errors.pattern-syntax").format(e.description.toLowerCase()))
+				}
+			}
+		}
 	}
 }
