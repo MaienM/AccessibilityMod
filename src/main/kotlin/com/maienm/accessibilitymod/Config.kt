@@ -21,6 +21,10 @@ object Config {
 				.push("itemMaterialOverlay")
 		}
 
+		var enable by builder
+			.comment("Whether this functionality should be enabled.")
+			.define("enable", true)
+
 		var matchers by builder
 			.comment(
 				"The matchers are methods to determine the material of an item.",

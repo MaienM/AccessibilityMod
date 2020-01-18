@@ -12,6 +12,10 @@ object ItemMaterialOverlayRenderer {
 	private val FONT: FontRenderer = Minecraft.getInstance().fontRenderer!!
 
 	fun onRenderItemModelIntoGUI(stack: ItemStack, x: Int, y: Int) {
+		if (!Config.ItemMaterialOverlay.enable) {
+			return
+		}
+
 		val text = IItemMatcher.InstanceRegistry.getMaterials(stack)
 			.map(::listOf)
 			.mapNotNull<List<String>, String>(Config.ItemMaterialOverlay.materialNames::get)
