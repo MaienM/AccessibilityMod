@@ -38,7 +38,7 @@ class TagItemMatcher(pattern: String) : IItemMatcher {
 						yield(i18n("tag.errors.pattern-num-capture-groups"))
 					}
 				} catch (e: PatternSyntaxException) {
-					yield(i18n("tag.errors.pattern-syntax").format(e.description.toLowerCase()))
+					yield(i18n("tag.errors.pattern-syntax", e.description.toLowerCase()))
 				}
 			}
 		}

@@ -61,6 +61,6 @@ abstract class BaseScreen(
 
 	companion object {
 		const val I18N_PREFIX = "accessibilitymod.gui"
-		fun i18n(key: String) = I18n.format("$I18N_PREFIX.$key")
+		fun i18n(key: String, vararg parameters: Any) = I18n.format("${I18N_PREFIX}.$key", *parameters)
 	}
 }

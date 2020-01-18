@@ -18,7 +18,7 @@ interface IItemMatcher {
 
 	companion object {
 		const val I18N_PREFIX = "accessibilitymod.gui.matchers"
-		fun i18n(key: String) = I18n.format("${I18N_PREFIX}.$key")
+		fun i18n(key: String, vararg parameters: Any) = I18n.format("${I18N_PREFIX}.$key", *parameters)
 	}
 
 	/**
@@ -38,7 +38,7 @@ interface IItemMatcher {
 				validators[field] = {
 					sequence {
 						if (it == null) {
-							yield(i18n("errors.missing-field").format(field))
+							yield(i18n("errors.missing-field", field))
 						} else {
 							yieldAll(validator(it))
 						}
@@ -52,7 +52,7 @@ interface IItemMatcher {
 		fun validate(map: Map<String, Any>): Result {
 			val errors = validators.mapValues { (field, validator) -> validator(map[field]) }.toMutableMap()
 			map.keys.filterNot(validators::containsKey).forEach { field ->
-				errors[field] = sequenceOf(i18n("errors.unknown-field").format(field))
+				errors[field] = sequenceOf(i18n("errors.unknown-field", field))
 			}
 			return Result(errors)
 		}
