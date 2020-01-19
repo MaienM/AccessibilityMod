@@ -20,6 +20,8 @@ interface ILayoutableWidgetContainer {
 	fun <T : Widget> layout(widget: T): ILayoutableWidget<T> =
 		ILayoutableWidget.of(this, add(widget)).also { layoutableWidgets.add(it); it.updateArea() }
 
+	fun getWidget(index: Int): Widget
+
 	fun <T : Widget> remove(widget: T)
 	fun <T : Widget> unlayout(widget: T) {
 		layoutableWidgets.removeIf { it.widget == widget }

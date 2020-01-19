@@ -30,6 +30,8 @@ abstract class BaseScreen(
 		children.remove(widget)
 	}
 
+	override fun getWidget(index: Int) = buttons[(buttons.size + index) % buttons.size]
+
 	override fun getArea() = Area(0, 0, width, height)
 
 	protected fun toScreen(screen: Screen) = minecraft!!.displayGuiScreen(screen)

@@ -18,23 +18,20 @@ import com.electronwill.nightconfig.core.Config as NCConfig
 class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	BaseScreen(minecraft, lastScreen, "config.matchers.title") {
 
-	private lateinit var list: PaginatedListWidget<NCConfig>
-
 	override fun init() {
 		super.init()
 
 		addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
-		addText(i18n("config.matchers.description")).centerX(0.5).setY1(40)
-		addButton(i18n("config.back")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
-
-		list = PaginatedListWidget(
+		addText(i18n("config.matchers.description")).centerX(0.5).setY1(getWidget(-2), offset = 10)
+		layout(PaginatedListWidget(
 			minecraft!!.fontRenderer,
 			Config.ItemMaterialOverlay.matchers,
 			minWidgetSize = Dimensions(1, 60),
 			maxColumns = 1,
 			minRowSpacing = 3
-		) { matcher -> MatcherEntry(minecraft!!.fontRenderer, matcher) }
-		layout(list).centerX(0.6).setY(80, -40)
+		) { matcher -> MatcherEntry(minecraft!!.fontRenderer, matcher) })
+			.centerX(0.6).setY1(getWidget(-2), offset = 10).setY2(-40)
+		addButton(i18n("config.back")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
 	}
 
 	/**
@@ -106,7 +103,8 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 
 		private val textWidgets: Map<String, TextFieldWidget> by lazy {
 			IItemMatcher.TypeRegistry.entry(type).fields.mapValues { (_, i18nKey) ->
-				TextFieldWidget(minecraft.fontRenderer, 0, 0, 0, 0, null,
+				TextFieldWidget(
+					minecraft.fontRenderer, 0, 0, 0, 0, null,
 					i18n(i18nKey)
 				)
 			}
@@ -135,7 +133,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			super.init()
 
 			addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
-			layout(generalValidationWidget).centerX(0.5).setY1(40)
+			layout(generalValidationWidget).centerX(0.5).setY1(getWidget(-2), offset = 10)
 
 			var relativeTo = generalValidationWidget
 			val textOffset = 10 - minecraft!!.fontRenderer.FONT_HEIGHT / 2

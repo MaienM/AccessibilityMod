@@ -16,6 +16,10 @@ class TextWidget(
 	enum class Alignment { LEFT, CENTER, RIGHT }
 
 	private fun calculateLines(eachLine: (String, Float) -> Unit): Float {
+		if (message.isEmpty()) {
+			return 0f
+		}
+
 		val height = font.FONT_HEIGHT.toFloat()
 		var yOffset = 0f
 		message.split("\n").forEach { paragraph ->
