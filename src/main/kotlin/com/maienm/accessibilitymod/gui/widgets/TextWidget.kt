@@ -15,17 +15,21 @@ class TextWidget(
 ) : Widget(0, 0, 0, 0, message) {
 	enum class Alignment { LEFT, CENTER, RIGHT }
 
-	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
+	private fun calculateLines(eachLine: (String, Float) -> Unit): Float {
 		val height = font.getWordWrappedHeight(message, Int.MAX_VALUE).toFloat()
 		var yOffset = 0f
 		message.split("\n").forEach { paragraph ->
 			font.listFormattedStringToWidth(paragraph, width).forEach { line ->
-				renderLine(line, yOffset)
+				eachLine(line, yOffset)
 				yOffset += LINE_SPACING * height
 			}
 			yOffset += (PARAGRAPH_SPACING - LINE_SPACING) * height
 		}
-		this.height = yOffset.toInt()
+		return yOffset
+	}
+
+	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
+		this.height = calculateLines(::renderLine).toInt()
 	}
 
 	private fun renderLine(line: String, yOffset: Float) {
@@ -37,7 +41,7 @@ class TextWidget(
 		font.drawStringWithShadow(line, x + xOffset, y + yOffset, color)
 	}
 
-	fun updateHeight() = render(-Int.MAX_VALUE, -Int.MAX_VALUE, 0f)
+	fun calculateHeight() = calculateLines { _, _ -> }.toInt()
 
 	override fun setHeight(value: Int) {
 		// Auto-determined, so don't actually set.

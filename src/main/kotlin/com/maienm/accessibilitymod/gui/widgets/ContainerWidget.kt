@@ -25,6 +25,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 	override fun <T : Widget> remove(widget: T) {
 		widgets.remove(widget)
 	}
+	fun clear() = widgets.clear().also { layoutableWidgets.clear() }
 
 	override fun getArea(): Area = Area(x, y, width, height)
 

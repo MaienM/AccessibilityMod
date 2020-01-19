@@ -180,10 +180,10 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			validationResult = result
 			validationWidgets.forEach { (key, text) ->
 				text.message = result.get(key).joinToString("\n")
-				text.updateHeight()
+				text.calculateHeight()
 			}
 			generalValidationWidget.message = result.getMissed().joinToString("\n")
-			generalValidationWidget.updateHeight()
+			generalValidationWidget.calculateHeight()
 			saveButton.active = valid
 		}
 
