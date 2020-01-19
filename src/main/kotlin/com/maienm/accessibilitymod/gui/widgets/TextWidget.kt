@@ -16,7 +16,7 @@ class TextWidget(
 	enum class Alignment { LEFT, CENTER, RIGHT }
 
 	private fun calculateLines(eachLine: (String, Float) -> Unit): Float {
-		val height = font.getWordWrappedHeight(message, Int.MAX_VALUE).toFloat()
+		val height = font.FONT_HEIGHT.toFloat()
 		var yOffset = 0f
 		message.split("\n").forEach { paragraph ->
 			font.listFormattedStringToWidth(paragraph, width).forEach { line ->
@@ -25,7 +25,7 @@ class TextWidget(
 			}
 			yOffset += (PARAGRAPH_SPACING - LINE_SPACING) * height
 		}
-		return yOffset
+		return yOffset - PARAGRAPH_SPACING * height + height
 	}
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
@@ -50,7 +50,7 @@ class TextWidget(
 	override fun clicked(p_clicked_1_: Double, p_clicked_3_: Double): Boolean = false
 
 	companion object {
-		const val PARAGRAPH_SPACING = 0.9f
-		const val LINE_SPACING = 0.5f
+		const val PARAGRAPH_SPACING = 1.5f
+		const val LINE_SPACING = 1f
 	}
 }
