@@ -106,7 +106,7 @@ compileKotlin.kotlinOptions.jvmTarget = "1.8"
 /**
  * A FilterReader that allows transforming the entire file at once, instead of line-by-line.
  */
-class TransformFilter(val originalReader: Reader): FilterReader(PipedReader()) {
+class TransformFilter(val originalReader: Reader): FilterReader(PipedReader(65536)) {
 	fun setTransform(transform: (Reader, Writer) -> Unit) {
 		val writer = PipedWriter()
 		(this.`in` as PipedReader).connect(writer)
