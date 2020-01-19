@@ -1,7 +1,8 @@
-package com.maienm.accessibilitymod.gui.screens
+package com.maienm.accessibilitymod.gui.screens.itemoverlayrenderer
 
 import com.maienm.accessibilitymod.Config
 import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.screens.BaseScreen
 import com.maienm.accessibilitymod.gui.widgets.ContainerWidget
 import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
 import com.maienm.accessibilitymod.gui.widgets.TextWidget
@@ -105,7 +106,9 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 
 		private val textWidgets: Map<String, TextFieldWidget> by lazy {
 			IItemMatcher.TypeRegistry.entry(type).fields.mapValues { (_, i18nKey) ->
-				TextFieldWidget(minecraft.fontRenderer, 0, 0, 0, 0, null, i18n(i18nKey))
+				TextFieldWidget(minecraft.fontRenderer, 0, 0, 0, 0, null,
+					i18n(i18nKey)
+				)
 			}
 		}
 		private val generalValidationWidget = TextWidget(minecraft.fontRenderer, "")

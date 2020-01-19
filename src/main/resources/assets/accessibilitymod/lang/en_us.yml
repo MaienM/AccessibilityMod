@@ -1,6 +1,7 @@
 accessibilitymod:
    gui.config:
       title: Accessibility Mod Config
+
       close: Return to main menu
       back: Back
 
@@ -12,8 +13,17 @@ accessibilitymod:
       delete-confirm: Delete
       delete-cancel: Cancel
 
+      overlay:
+         title: Item Material Overlay
+         description:
+            This functionality renders text over items to indicate what material it is.
+
+            This can be quite helpful for similar looking items, such as ingots, where often the color is the only way
+            to identify them at a glance. This can be problematic, be it due to colorblindness, or just due to there
+            being like 100 different ingots with very minor color differences.
+
       matchers:
-         title: Item Overlay Matchers
+         title: Item Material Overlay Matchers
          description:
             The matchers are ways to determine the material of an item.
 
@@ -24,7 +34,7 @@ accessibilitymod:
             title-existing: Edit Matcher
 
       mapping:
-         title: Item Overlay Mappings
+         title: Item Material Overlay Mappings
          description:
             The matchers determine the material names of the items, but these can be quite long and somewhat cryptic.
             Some of them might not even be useful to you.
