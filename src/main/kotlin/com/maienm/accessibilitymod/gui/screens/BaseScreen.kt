@@ -39,10 +39,17 @@ abstract class BaseScreen(
 		super.init()
 
 		if (AccessibilityMod.DEBUG) {
-			addButton("RL") { init() }.setX(5, 25).setY(-25, -5)
+			addButton("RL", ::reinit).setX(5, 25).setY(-25, -5)
 		}
 
 		initialized = true
+	}
+
+	private fun reinit() {
+		buttons.clear()
+		children.clear()
+		layoutableWidgets.clear()
+		init()
 	}
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
