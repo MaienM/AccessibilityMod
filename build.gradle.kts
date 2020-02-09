@@ -53,7 +53,7 @@ configure<UserDevExtension> {
 			workingDirectory(project.file("run"))
 			properties["forge.logging.markers"] = "SCAN,REGISTRIES,REGISTRYDUMP,COREMOD"
 			properties["forge.logging.console.level"] = "debug"
-			args("-Dcom.maienm.accessibilitymod.debug")
+			properties["com.maienm.accessibilitymod.debug"] = ""
 			mods {
 				create (project.name) {
 					source(java.sourceSets["main"])
