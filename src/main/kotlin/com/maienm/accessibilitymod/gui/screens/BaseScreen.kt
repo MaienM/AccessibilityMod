@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.client.resources.I18n
-import net.minecraft.util.text.TranslationTextComponent
+import net.minecraft.util.text.StringTextComponent
 
 /**
  * A somewhat extended Screen.
@@ -15,7 +15,7 @@ abstract class BaseScreen(
 	minecraft: Minecraft,
 	protected val lastScreen: Screen?,
 	title: String
-) : Screen(TranslationTextComponent("$I18N_PREFIX.$title")), ILayoutableWidgetContainer {
+) : Screen(StringTextComponent(title)), ILayoutableWidgetContainer {
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 	override val font by lazy { minecraft.fontRenderer }
 	private var initialized = false

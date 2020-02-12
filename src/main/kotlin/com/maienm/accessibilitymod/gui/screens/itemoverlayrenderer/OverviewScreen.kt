@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screen.Screen
 
 class OverviewScreen(minecraft: Minecraft, lastScreen: Screen?) :
-	BaseScreen(minecraft, lastScreen, "config.overlay.title") {
+		BaseScreen(minecraft, lastScreen, i18n("config.overlay.title")) {
 
 	override fun init() {
 		super.init()

@@ -16,7 +16,7 @@ import org.apache.logging.log4j.LogManager
 import com.electronwill.nightconfig.core.Config as NCConfig
 
 class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
-	BaseScreen(minecraft, lastScreen, "config.matchers.title") {
+	BaseScreen(minecraft, lastScreen, i18n("config.matchers.title")) {
 
 	override fun init() {
 		super.init()
@@ -31,6 +31,14 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			minRowSpacing = 3
 		) { matcher -> MatcherEntry(minecraft!!.fontRenderer, matcher) })
 			.centerX(0.6).setY1(getWidget(-2), offset = 10).setY2(-40)
+		addText(i18n("config.matchers.add")).setX1(0.8, 10).setX2(-10).setY1(getWidget(-2), edge = YEdge.TOP, offset = 2)
+		IItemMatcher.TypeRegistry.list().forEach { type ->
+			val baseConfig = NCConfig.inMemory()
+			baseConfig.set<String>("type", type)
+			addButton(i18n("matchers.$type.name")) {
+				toScreen(EditScreen(minecraft!!, this, NCConfig.copy(baseConfig)))
+			}.setX1(0.8, 2).setX2(-2).setY1(getWidget(-2), offset = 10).setHeight(30)
+		}
 		addButton(i18n("config.back")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
 	}
 
@@ -47,9 +55,10 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				addText("${i18n(i18nKey)}: ${matcher.get<String>(key)}")
 					.setX1(3)
 					.setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT)
+					.setY2(-65)
 			}
-			addButton(i18n("config.edit"), ::edit).setX1(-0.2).setX2(-2).setY1(2).setY2(0.5, -1)
-			addButton(i18n("config.delete"), ::delete).setX1(-0.2).setX2(-2).setY1(0.5, 1).setY2(-2)
+			addButton(i18n("config.edit"), ::edit).setX1(-60).setX2(-2).setY1(2).setY2(0.5, -1)
+			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1(0.5, 1).setY2(-2)
 		}
 
 		private fun edit() {
@@ -96,7 +105,10 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		BaseScreen(
 			minecraft,
 			lastScreen,
-			"config.matchers.edit.title-${if (matcher.size() == 1) "new" else "existing"}"
+			i18n(
+				"config.matchers.edit.title-${if (matcher.size() == 1) "new" else "existing"}",
+				i18n("matchers.${matcher.get<String>("type")}.name")
+			)
 		) {
 
 		private val type: String = matcher["type"]
@@ -126,7 +138,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			get() = validationResult?.isValid() ?: false
 
 		init {
-			textWidgets.forEach { (key, field) -> field.text = data[key] as String }
+			textWidgets.forEach { (key, field) -> field.text = data[key] as? String ?: "" }
 		}
 
 		override fun init() {
