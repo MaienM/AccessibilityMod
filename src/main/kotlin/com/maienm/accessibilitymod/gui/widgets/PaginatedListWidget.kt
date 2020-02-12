@@ -57,7 +57,7 @@ class PaginatedListWidget<T>(
 		get() = rows * columns
 
 	private val currentItems: List<T>
-		get() = items.subList((page - 1) * pageSize, min(page * pageSize, items.size - 1))
+		get() = items.subList((page - 1) * pageSize, min(page * pageSize, items.size))
 
 	private val paginationContainer: ILayoutableWidget<ContainerWidget>
 	private val paginationButtonPrev: ILayoutableWidget<GuiButtonExt>
@@ -122,6 +122,7 @@ class PaginatedListWidget<T>(
 		widgets.addAll(itemWidgets)
 
 		paginationButtonPrev.widget.active = page > 1
+		paginationButtonNext.widget.active = page < pages
 		paginationText.widget.message = "$page/$pages"
 
 		needsUpdate = false

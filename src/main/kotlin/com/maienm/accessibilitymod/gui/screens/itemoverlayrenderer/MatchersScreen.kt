@@ -27,7 +27,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		layout(PaginatedListWidget(
 			minecraft!!.fontRenderer,
 			Config.ItemMaterialOverlay.matchers,
-			minWidgetSize = Dimensions(1, 60),
+			minWidgetSize = Dimensions(1, 50),
 			maxColumns = 1,
 			minRowSpacing = 3
 		) { matcher -> MatcherEntry(minecraft!!.fontRenderer, matcher) })
@@ -38,7 +38,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			baseConfig.set<String>("type", type)
 			addButton(i18n("matchers.$type.name")) {
 				toScreen(EditScreen(minecraft!!, this, NCConfig.copy(baseConfig)))
-			}.setX1(0.8, 2).setX2(-2).setY1(getWidget(-2), offset = 10).setHeight(30)
+			}.setX1(0.8, 2).setX2(-2).setY1(getWidget(-2), offset = 4).setHeight(20)
 		}
 		addButton(i18n("config.back")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
 	}

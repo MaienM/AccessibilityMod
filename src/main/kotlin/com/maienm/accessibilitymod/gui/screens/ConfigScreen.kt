@@ -6,7 +6,7 @@ import com.maienm.accessibilitymod.gui.widgets.TextWidget
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screen.Screen
 
-class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) : BaseScreen(minecraft, lastScreen, "config.title") {
+class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) : BaseScreen(minecraft, lastScreen, i18n("config.title")) {
 	override fun init() {
 		super.init()
 
