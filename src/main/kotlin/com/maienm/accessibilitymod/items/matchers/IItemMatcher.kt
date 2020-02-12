@@ -91,6 +91,7 @@ interface IItemMatcher {
 			classes[name] = Entry(fields, initializer, validator)
 		}
 
+		fun list() = classes.keys
 		fun entry(type: String) =
 			classes[type] ?: throw IllegalArgumentException("IItemMatcher type ${type} not found.")
 

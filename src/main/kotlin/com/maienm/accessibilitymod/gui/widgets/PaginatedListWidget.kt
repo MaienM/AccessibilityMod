@@ -88,6 +88,13 @@ class PaginatedListWidget<T>(
 		paginationButtonNext = paginationContainer.widget.addButton(">>") { page += 1 }.setX1(0.5, 25).setX2(1.0)
 	}
 
+	public fun goToItem(item: T) {
+		val index = items.indexOf(item)
+		if (index >= 0) {
+			page = (index / pageSize) + 1
+		}
+	}
+
 	override fun onResize(oldArea: Area, newArea: Area) {
 		super.onResize(oldArea, newArea)
 		needsUpdate = true

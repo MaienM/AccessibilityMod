@@ -16,6 +16,8 @@ class OverviewScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		addText(i18n("config.overlay.description")).centerX(0.5).setY1(getWidget(-2), offset = 10)
 		addButton(i18n("config.matchers.title")) { toScreen(::MatchersScreen) }
 			.centerX(0.6).setY1(getWidget(-2), offset = 10).setHeight(20)
+		addButton(i18n("config.mappings.title")) { toScreen(::MappingsScreen) }
+			.centerX(0.6).setY1(getWidget(-2), offset = 4).setHeight(20)
 		addButton(i18n("config.back")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
 	}
 }
