@@ -47,8 +47,6 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	 * Widget for a single matcher in the listing. Has buttons to delete/edit.
 	 */
 	inner class MatcherEntry(font: FontRenderer, private val matcher: NCConfig) : ContainerWidget(font) {
-		private var deleteConfirm: ILayoutableWidget<DeleteConfirm>? = null
-
 		init {
 			val type: String = matcher["type"]
 			addText(i18n("matchers.$type.name")).setX1(3).setY1(3)
@@ -67,8 +65,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		}
 
 		private fun delete() {
-			deleteConfirm?.also { unlayout(it) }
-			deleteConfirm = layout(DeleteConfirm(font, matcher) { deleteConfirm?.also { unlayout(it) } })
+			setOverlay(DeleteConfirm(font, matcher) { setOverlay(null) })
 		}
 	}
 

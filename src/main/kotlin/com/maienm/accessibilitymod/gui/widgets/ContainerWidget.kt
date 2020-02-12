@@ -21,16 +21,24 @@ open class ContainerWidget(override val font: FontRenderer) :
 	protected val widgets: MutableList<Widget> = mutableListOf()
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 
+	private var overlayWidget: ILayoutableWidget<Widget>? = null
+
 	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(0, it) }
 	override fun <T : Widget> remove(widget: T) {
 		widgets.remove(widget)
 	}
 
-	fun clear() = widgets.clear().also { layoutableWidgets.clear() }
+	fun clear() = widgets.clear().also { layoutableWidgets.clear() }.also { overlayWidget = null }
 
 	override fun getWidget(index: Int) = widgets[(widgets.size + index) % widgets.size]
 
 	override fun getArea(): Area = Area(x, y, width, height)
+
+	fun setOverlay(widget: Widget?) {
+		overlayWidget?.also { unlayout(it) }
+		overlayWidget = null
+		widget?.also { overlayWidget = layout(it) }
+	}
 
 	open fun renderBackground() {}
 
@@ -48,7 +56,9 @@ open class ContainerWidget(override val font: FontRenderer) :
 		updateAreas()
 	}
 
-	override fun children(): MutableList<out IGuiEventListener> = widgets
+	override fun children(): MutableList<out IGuiEventListener> {
+		return overlayWidget?.let { mutableListOf(it.widget) } ?: widgets
+	}
 
 	// Implementation of methods of INestedGuiHandler. Identical to the one found in FocusableGui.
 
