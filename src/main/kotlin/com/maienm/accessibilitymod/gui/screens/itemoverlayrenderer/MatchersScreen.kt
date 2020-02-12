@@ -5,12 +5,13 @@ import com.maienm.accessibilitymod.gui.helpers.*
 import com.maienm.accessibilitymod.gui.screens.BaseScreen
 import com.maienm.accessibilitymod.gui.widgets.ContainerWidget
 import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
+import com.maienm.accessibilitymod.gui.widgets.TextFieldWidgetEx
 import com.maienm.accessibilitymod.gui.widgets.TextWidget
 import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.gui.widget.Widget
 import net.minecraftforge.fml.client.config.GuiButtonExt
 import org.apache.logging.log4j.LogManager
 import com.electronwill.nightconfig.core.Config as NCConfig
@@ -113,12 +114,9 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 
 		private val type: String = matcher["type"]
 
-		private val textWidgets: Map<String, TextFieldWidget> by lazy {
+		private val textWidgets: Map<String, TextFieldWidgetEx> by lazy {
 			IItemMatcher.TypeRegistry.entry(type).fields.mapValues { (_, i18nKey) ->
-				TextFieldWidget(
-					minecraft.fontRenderer, 0, 0, 0, 0, null,
-					i18n(i18nKey)
-				)
+				TextFieldWidgetEx(minecraft.fontRenderer, 0, 0, 0, 0, i18n(i18nKey))
 			}
 		}
 		private val generalValidationWidget = TextWidget(minecraft.fontRenderer, "")
@@ -158,7 +156,6 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 					.setX(0.3, 0.8)
 					.setY1(relativeTo, offset = if (i == 0) 10 else 3)
 					.setHeight(20)
-				textWidget.moveCursorBy(0) // Without this the text isn't rendered until you focus the box.
 
 				// Label to the left and slightly down, to center it vertically.
 				addText("${i18n(i18nKey)}:").setX1(0.2).setY1(fieldLayout.widget, YEdge.TOP, textOffset)
