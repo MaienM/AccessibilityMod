@@ -5,6 +5,7 @@ import io.opencubes.boxlin.getValue
 import io.opencubes.boxlin.setValue
 import net.minecraftforge.common.ForgeConfigSpec
 import com.electronwill.nightconfig.core.Config as NCConfig
+import com.electronwill.nightconfig.core.CommentedConfig as NCCConfig
 
 object Config {
 	private val builder = ForgeConfigSpec.Builder()
@@ -45,7 +46,7 @@ object Config {
 				"directly, but are instead used in this mapping to determine the text that should be shown.",
 				"If a material is not in this mapping, no overlay will be shown for it."
 			)
-			.define("materialNames", configOf("iron" to "Fe", "gold" to "Au"))
+			.define("materialNames", commentedConfigOf("iron" to "Fe", "gold" to "Au"))
 
 		init {
 			builder.pop()
@@ -82,3 +83,8 @@ object Config {
  * @see [mutableMapOf] for how these pairs are processed
  */
 fun configOf(vararg pairs: Pair<String, Any?>): NCConfig = NCConfig.wrap(mutableMapOf(*pairs), TomlFormat.instance())
+
+/**
+ * Like [configOf], but return a [NCCConfig] instead.
+ */
+fun commentedConfigOf(vararg pairs: Pair<String, Any?>): NCCConfig = NCCConfig.wrap(mutableMapOf(*pairs), TomlFormat.instance())
