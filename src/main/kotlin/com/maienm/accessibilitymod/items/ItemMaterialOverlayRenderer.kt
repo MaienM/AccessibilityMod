@@ -1,7 +1,9 @@
 package com.maienm.accessibilitymod.items
 
 import com.maienm.accessibilitymod.Config
+import com.maienm.accessibilitymod.helpers.clamp
 import com.maienm.accessibilitymod.items.matchers.IItemMatcher
+import com.mojang.blaze3d.platform.GlStateManager
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.texture.AtlasTexture
@@ -13,6 +15,7 @@ import org.lwjgl.opengl.GL11
 object ItemMaterialOverlayRenderer {
 	private val FONT: FontRenderer = Minecraft.getInstance().fontRenderer!!
 	private val TEXTURE_MANAGER: TextureManager = Minecraft.getInstance().textureManager!!
+	private val MAX_WIDTH = 16
 
 	fun renderOverlay(stack: ItemStack, x: Int, y: Int) {
 		if (!Config.ItemMaterialOverlay.enable) {
@@ -25,9 +28,23 @@ object ItemMaterialOverlayRenderer {
 			.firstOrNull()
 			?: return
 
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		FONT.drawStringWithShadow(text, x.toFloat(), y.toFloat(), TextFormatting.WHITE.color!!)
+		GlStateManager.pushMatrix()
+		GlStateManager.disableDepthTest()
+
+		GlStateManager.translated(x.toDouble(), y.toDouble(), 0.0)
+
+		val width = FONT.getStringWidth(text)
+		val scale = clamp(
+			MAX_WIDTH.toDouble() / width,
+			Config.ItemMaterialOverlay.Text.minScale,
+			Config.ItemMaterialOverlay.Text.maxScale
+		)
+		GlStateManager.scaled(scale, scale, scale)
+
+		FONT.drawStringWithShadow(text, 0f, 0f, TextFormatting.WHITE.color!!)
+
 		TEXTURE_MANAGER.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE)
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GlStateManager.enableDepthTest()
+		GlStateManager.popMatrix()
 	}
 }

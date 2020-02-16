@@ -19,6 +19,7 @@ object Config {
 			builder
 				.comment("Render text indicating the material of an item over said item in inventories.")
 				.push("itemMaterialOverlay")
+			Text
 		}
 
 		var enable by builder
@@ -48,6 +49,29 @@ object Config {
 
 		init {
 			builder.pop()
+		}
+
+		object Text {
+			init {
+				builder
+					.comment("Settings related to the appearance of the text.")
+					.push("text")
+			}
+
+			var minScale by builder
+				.comment(
+					"The smallest scale to render the font as.",
+					"If the chosen text doesn't fit in the item's area at this size, it may extend to beyond this area."
+				)
+				.defineInRange("minScale", 0.4, 0.1, 2.0)
+
+			var maxScale by builder
+				.comment("The largest scale to render the font as.")
+				.defineInRange("maxScale", 0.8, 0.1, 2.0)
+
+			init {
+				builder.pop()
+			}
 		}
 	}
 }
