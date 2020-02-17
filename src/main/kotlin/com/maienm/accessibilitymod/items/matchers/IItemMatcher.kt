@@ -18,7 +18,7 @@ interface IItemMatcher {
 
 	companion object {
 		const val I18N_PREFIX = "accessibilitymod.gui.matchers"
-		fun i18n(key: String, vararg parameters: Any) = I18n.format("${I18N_PREFIX}.$key", *parameters)
+		fun i18n(key: String, vararg parameters: Any) = I18n.format("$I18N_PREFIX.$key", *parameters)
 	}
 
 	/**
@@ -93,7 +93,7 @@ interface IItemMatcher {
 
 		fun list() = classes.keys
 		fun entry(type: String) =
-			classes[type] ?: throw IllegalArgumentException("IItemMatcher type ${type} not found.")
+			classes[type] ?: throw IllegalArgumentException("IItemMatcher type $type not found.")
 
 		fun create(config: Map<String, Any>) = entry(config["type"] as String).initializer(config)
 		fun validate(config: Map<String, Any>) = entry(config["type"] as String).validator.validate(config)

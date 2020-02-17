@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.texture.AtlasTexture
 import net.minecraft.client.renderer.texture.TextureManager
 import net.minecraft.item.ItemStack
 import net.minecraft.util.text.TextFormatting
-import org.lwjgl.opengl.GL11
 
 object ItemMaterialOverlayRenderer {
 	private val FONT: FontRenderer = Minecraft.getInstance().fontRenderer!!

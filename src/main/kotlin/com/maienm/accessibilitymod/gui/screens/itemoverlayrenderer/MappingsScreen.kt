@@ -1,7 +1,18 @@
 package com.maienm.accessibilitymod.gui.screens.itemoverlayrenderer
 
 import com.maienm.accessibilitymod.Config
-import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.helpers.Dimensions
+import com.maienm.accessibilitymod.gui.helpers.YEdge
+import com.maienm.accessibilitymod.gui.helpers.addButton
+import com.maienm.accessibilitymod.gui.helpers.addText
+import com.maienm.accessibilitymod.gui.helpers.centerX
+import com.maienm.accessibilitymod.gui.helpers.renderBackground
+import com.maienm.accessibilitymod.gui.helpers.setHeight
+import com.maienm.accessibilitymod.gui.helpers.setX1
+import com.maienm.accessibilitymod.gui.helpers.setX2
+import com.maienm.accessibilitymod.gui.helpers.setY
+import com.maienm.accessibilitymod.gui.helpers.setY1
+import com.maienm.accessibilitymod.gui.helpers.setY2
 import com.maienm.accessibilitymod.gui.screens.BaseScreen
 import com.maienm.accessibilitymod.gui.widgets.ContainerWidget
 import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
@@ -12,20 +23,18 @@ import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.screen.Screen
 import net.minecraftforge.fml.client.config.GuiButtonExt
 import org.apache.logging.log4j.LogManager
-import com.electronwill.nightconfig.core.Config as NCConfig
 
 class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		BaseScreen(minecraft, lastScreen, i18n("config.mappings.title")) {
-
 	private val list: PaginatedListWidget<String>
 
 	init {
 		list = PaginatedListWidget(
-			minecraft!!.fontRenderer,
+			minecraft.fontRenderer,
 			minWidgetSize = Dimensions(1, 16),
 			maxColumns = 1,
 			minRowSpacing = 3
-		) { key -> MappingEntry(minecraft!!.fontRenderer, key) }
+		) { key -> MappingEntry(minecraft.fontRenderer, key) }
 	}
 
 	override fun init() {
@@ -58,8 +67,8 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		init {
 			keyText = addText(key).setX1(6).setX2(0.5, -58).setY1(4).widget
 			valueText = addText(Config.ItemMaterialOverlay.materialNames[key]).setX1(0.5, -55).setX2(-113).setY1(4).widget
-			addButton(i18n("config.edit"), ::edit).setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, y1 -> height + 2 }
-			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, y1 -> height + 2 }
+			addButton(i18n("config.edit"), ::edit).setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, _ -> height + 2 }
+			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, _ -> height + 2 }
 
 			if (key.isEmpty()) {
 				edit()
@@ -89,8 +98,10 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			ContainerWidget(font) {
 		init {
 			addText(i18n("config.mappings.confirm-delete")).setX1(4).setY1 { (it - font.FONT_HEIGHT) / 2 }
-			addButton(i18n("config.delete-confirm"), ::confirm).setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, y1 -> height + 2 }
-			addButton(i18n("config.delete-cancel"), ::cancel).setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, y1 -> height + 2 }
+			addButton(i18n("config.delete-confirm"), ::confirm)
+				.setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, _ -> height + 2 }
+			addButton(i18n("config.delete-cancel"), ::cancel)
+				.setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, _ -> height + 2 }
 		}
 
 		private fun confirm() {
@@ -114,7 +125,15 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	inner class EditOverlay(font: FontRenderer, private val key: String, private val close: () -> Unit) :
 			ContainerWidget(font) {
 		private val keyField = TextFieldWidgetEx(minecraft!!.fontRenderer, 0, 0, 0, 0, "", key)
-		private val nameField = TextFieldWidgetEx(minecraft!!.fontRenderer, 0, 0, 0, 0, "", Config.ItemMaterialOverlay.materialNames[key])
+		private val nameField = TextFieldWidgetEx(
+			minecraft!!.fontRenderer,
+			0,
+			0,
+			0,
+			0,
+			"",
+			Config.ItemMaterialOverlay.materialNames[key]
+		)
 		private val saveButton: GuiButtonExt
 
 		init {
@@ -124,10 +143,12 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				addText(key).setX1(6).setX2(0.5, -58).setY1(4)
 			}
 			layout(nameField).setX1(0.5, -59).setX2(-119)
-			addButton(i18n("config.edit-save"), ::confirm).setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, y1 -> height + 2 }.also {
-				saveButton = it.widget
-			}
-			addButton(i18n("config.edit-cancel"), ::cancel).setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, y1 -> height + 2 }
+			addButton(i18n("config.edit-save"), ::confirm).setX1(-118).setX2(-60).setY1 { -2 }
+				.setY2 { height, _ -> height + 2 }.also {
+					saveButton = it.widget
+				}
+			addButton(i18n("config.edit-cancel"), ::cancel).setX1(-60).setX2(-2).setY1 { -2 }
+				.setY2 { height, _ -> height + 2 }
 		}
 
 		private fun confirm() {
@@ -146,7 +167,6 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			super.renderBackground()
 			renderBackground(minecraft!!, getArea(), 20)
 			saveButton.active = !keyField.text.isEmpty() && !nameField.text.isEmpty()
-
 		}
 	}
 

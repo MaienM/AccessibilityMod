@@ -44,7 +44,7 @@ fun renderBackground(minecraft: Minecraft, x: Double, y: Double, width: Double, 
 }
 
 fun renderBorder(minecraft: Minecraft, area: Area, borderWidth: Double = 1.0, color: Int = 16) =
-	renderBorder(minecraft, area.x, area.y, area.width, area.height, borderWidth)
+	renderBorder(minecraft, area.x, area.y, area.width, area.height, borderWidth, color)
 
 fun renderBorder(
 	minecraft: Minecraft,
@@ -54,8 +54,7 @@ fun renderBorder(
 	height: Int,
 	borderWidth: Double = 1.0,
 	color: Int = 16
-) =
-	renderBorder(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), borderWidth)
+) = renderBorder(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), borderWidth, color)
 
 fun renderBorder(
 	minecraft: Minecraft,

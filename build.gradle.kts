@@ -7,7 +7,6 @@ import java.io.PipedReader
 import java.io.PipedWriter
 import java.io.Reader
 import java.io.Writer
-import java.util.function.BiConsumer
 
 buildscript {
 	repositories {
@@ -32,6 +31,7 @@ val archivesBaseName = "accessibilitymod"
 val version = "0.1.0-SNAPSHOT"
 
 object versions {
+	// http://export.mcpbot.bspk.rs
 	val forge = "1.14.4-28.1.107"
 	val forge_mappings = arrayOf("snapshot", "20190719-1.14.3")
 }
@@ -55,7 +55,7 @@ configure<UserDevExtension> {
 			properties["forge.logging.console.level"] = "debug"
 			properties["com.maienm.accessibilitymod.debug"] = ""
 			mods {
-				create (project.name) {
+				create(project.name) {
 					source(java.sourceSets["main"])
 				}
 			}
@@ -106,7 +106,7 @@ compileKotlin.kotlinOptions.jvmTarget = "1.8"
 /**
  * A FilterReader that allows transforming the entire file at once, instead of line-by-line.
  */
-class TransformFilter(val originalReader: Reader): FilterReader(PipedReader(65536)) {
+class TransformFilter(val originalReader: Reader) : FilterReader(PipedReader(65536)) {
 	fun setTransform(transform: (Reader, Writer) -> Unit) {
 		val writer = PipedWriter()
 		(this.`in` as PipedReader).connect(writer)
@@ -128,7 +128,11 @@ class TransformFilter(val originalReader: Reader): FilterReader(PipedReader(6553
  * @param map The map to walk over.
  * @param callback A callback that will be invoked with a list of keys and a value for each value in the nested maps.
  */
-fun walkNestedMaps(map: Map<String, Any>, keys: MutableList<String> = ArrayList(), callback: (List<String>, Any) -> Unit) {
+fun walkNestedMaps(
+	map: Map<String, Any>,
+	keys: MutableList<String> = ArrayList(),
+	callback: (List<String>, Any) -> Unit
+) {
 	map.entries.forEach { entry ->
 		keys.add(keys.size, entry.key)
 		val entryMap = entry.value as? Map<String, Any>

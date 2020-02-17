@@ -1,6 +1,17 @@
 package com.maienm.accessibilitymod.gui.widgets
 
-import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.helpers.Area
+import com.maienm.accessibilitymod.gui.helpers.Dimensions
+import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidget
+import com.maienm.accessibilitymod.gui.helpers.addButton
+import com.maienm.accessibilitymod.gui.helpers.addText
+import com.maienm.accessibilitymod.gui.helpers.centerX
+import com.maienm.accessibilitymod.gui.helpers.getArea
+import com.maienm.accessibilitymod.gui.helpers.renderBackground
+import com.maienm.accessibilitymod.gui.helpers.setArea
+import com.maienm.accessibilitymod.gui.helpers.setX1
+import com.maienm.accessibilitymod.gui.helpers.setX2
+import com.maienm.accessibilitymod.gui.helpers.setY1
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.widget.Widget
@@ -88,7 +99,7 @@ class PaginatedListWidget<T>(
 		paginationButtonNext = paginationContainer.widget.addButton(">>") { page += 1 }.setX1(0.5, 25).setX2(1.0)
 	}
 
-	public fun goToItem(item: T) {
+	fun goToItem(item: T) {
 		val index = items.indexOf(item)
 		if (index >= 0) {
 			page = (index / pageSize) + 1
@@ -110,6 +121,7 @@ class PaginatedListWidget<T>(
 		when (growRows) {
 			GrowMode.STRETCH -> widgetHeight += rowRemainder / rows
 			GrowMode.SPACING -> rowSpacing += rowRemainder / rows
+			else -> {}
 		}
 
 		widgetWidth = minWidgetSize.width
@@ -118,6 +130,7 @@ class PaginatedListWidget<T>(
 		when (growColumns) {
 			GrowMode.STRETCH -> widgetWidth += columnRemainder / columns
 			GrowMode.SPACING -> columnSpacing += columnRemainder / (columns - 1)
+			else -> {}
 		}
 
 		pages = ceil(items.size / pageSize.toFloat()).toInt()

@@ -28,7 +28,7 @@ object AccessibilityMod {
 
 		// Mark as not required on the other side.
 		modLoadingContext.registerExtensionPoint(ExtensionPoint.DISPLAYTEST) {
-			Pair.of(Supplier { FMLNetworkConstants.IGNORESERVERONLY }, BiPredicate { incoming, isNetwork -> true })
+			Pair.of(Supplier { FMLNetworkConstants.IGNORESERVERONLY }, BiPredicate { _, _ -> true })
 		}
 
 		DistExecutor.runWhenOn(Dist.CLIENT) { Runnable(::initClient) }
@@ -52,4 +52,3 @@ object AccessibilityMod {
 		IItemMatcher.InstanceRegistry.reload()
 	}
 }
-

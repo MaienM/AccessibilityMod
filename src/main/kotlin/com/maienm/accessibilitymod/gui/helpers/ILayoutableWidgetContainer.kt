@@ -27,6 +27,7 @@ interface ILayoutableWidgetContainer {
 		layoutableWidgets.removeIf { it.widget == widget }
 		remove(widget)
 	}
+
 	fun <T : Widget, L : ILayoutableWidget<T>> unlayout(layoutable: L) {
 		layoutableWidgets.remove(layoutable)
 		remove(layoutable.widget)

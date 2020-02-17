@@ -12,10 +12,9 @@ import net.minecraft.client.gui.widget.Widget
  * A simple widget that can act as a container for ILayoutable widgets.
  */
 open class ContainerWidget(override val font: FontRenderer) :
-	Widget(0, 0, 0, 0, ""),
-	INestedGuiEventHandler,
-	ILayoutableWidgetContainer {
-
+		Widget(0, 0, 0, 0, ""),
+		INestedGuiEventHandler,
+		ILayoutableWidgetContainer {
 	private var oldArea = Area(-1, -1, -1, -1)
 
 	protected val widgets: MutableList<Widget> = mutableListOf()

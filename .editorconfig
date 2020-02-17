@@ -1,0 +1,5 @@
+[*.{kt,kts}]
+indent_size = unset
+max_line_length = 120
+# Disable rule, because IntelliJ already has consisent ordering (which is different from ktlint).
+disabled_rules = import-ordering

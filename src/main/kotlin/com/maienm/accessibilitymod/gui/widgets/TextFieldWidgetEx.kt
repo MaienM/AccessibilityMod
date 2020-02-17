@@ -3,13 +3,19 @@ package com.maienm.accessibilitymod.gui.widgets
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.widget.TextFieldWidget
 
-class TextFieldWidgetEx(fontIn: FontRenderer, x: Int, y: Int, width: Int, height: Int, msg: String? = "", initial: String = "")
-	: TextFieldWidget(fontIn, x, y, width, height, msg) {
-
+class TextFieldWidgetEx(
+	fontIn: FontRenderer,
+	x: Int,
+	y: Int,
+	width: Int,
+	height: Int,
+	msg: String = "",
+	initial: String = ""
+) : TextFieldWidget(fontIn, x, y, width, height, msg) {
 	private var needsRefresh = false
 
 	init {
-		setText(initial)
+		text = initial
 	}
 
 	override fun setText(textIn: String) {

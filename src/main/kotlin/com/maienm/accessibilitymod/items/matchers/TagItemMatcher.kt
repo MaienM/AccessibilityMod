@@ -26,7 +26,7 @@ class TagItemMatcher(pattern: String) : IItemMatcher {
 
 		val FIELDS = mapOf("pattern" to "matchers.tag.pattern")
 
-		val VALIDATOR = object: IItemMatcher.Validator() {
+		val VALIDATOR = object : IItemMatcher.Validator() {
 			init {
 				setValidator("pattern", validator = ::validatePattern)
 			}

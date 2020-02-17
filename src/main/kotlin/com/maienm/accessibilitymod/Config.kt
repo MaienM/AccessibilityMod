@@ -4,8 +4,8 @@ import com.electronwill.nightconfig.toml.TomlFormat
 import io.opencubes.boxlin.getValue
 import io.opencubes.boxlin.setValue
 import net.minecraftforge.common.ForgeConfigSpec
-import com.electronwill.nightconfig.core.Config as NCConfig
 import com.electronwill.nightconfig.core.CommentedConfig as NCCConfig
+import com.electronwill.nightconfig.core.Config as NCConfig
 
 object Config {
 	private val builder = ForgeConfigSpec.Builder()
@@ -87,4 +87,5 @@ fun configOf(vararg pairs: Pair<String, Any?>): NCConfig = NCConfig.wrap(mutable
 /**
  * Like [configOf], but return a [NCCConfig] instead.
  */
-fun commentedConfigOf(vararg pairs: Pair<String, Any?>): NCCConfig = NCCConfig.wrap(mutableMapOf(*pairs), TomlFormat.instance())
+fun commentedConfigOf(vararg pairs: Pair<String, Any?>): NCCConfig =
+	NCCConfig.wrap(mutableMapOf(*pairs), TomlFormat.instance())

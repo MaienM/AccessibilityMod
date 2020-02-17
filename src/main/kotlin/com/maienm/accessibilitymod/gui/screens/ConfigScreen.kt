@@ -1,12 +1,18 @@
 package com.maienm.accessibilitymod.gui.screens
 
-import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.helpers.addButton
+import com.maienm.accessibilitymod.gui.helpers.addText
+import com.maienm.accessibilitymod.gui.helpers.centerX
+import com.maienm.accessibilitymod.gui.helpers.setHeight
+import com.maienm.accessibilitymod.gui.helpers.setY
+import com.maienm.accessibilitymod.gui.helpers.setY1
 import com.maienm.accessibilitymod.gui.screens.itemoverlayrenderer.OverviewScreen
 import com.maienm.accessibilitymod.gui.widgets.TextWidget
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screen.Screen
 
-class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) : BaseScreen(minecraft, lastScreen, i18n("config.title")) {
+class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) :
+		BaseScreen(minecraft, lastScreen, i18n("config.title")) {
 	override fun init() {
 		super.init()
 

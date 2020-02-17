@@ -1,7 +1,12 @@
 package com.maienm.accessibilitymod.gui.screens
 
 import com.maienm.accessibilitymod.AccessibilityMod
-import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.helpers.Area
+import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidget
+import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidgetContainer
+import com.maienm.accessibilitymod.gui.helpers.addButton
+import com.maienm.accessibilitymod.gui.helpers.setX
+import com.maienm.accessibilitymod.gui.helpers.setY
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.Widget
@@ -11,11 +16,8 @@ import net.minecraft.util.text.StringTextComponent
 /**
  * A somewhat extended Screen.
  */
-abstract class BaseScreen(
-	minecraft: Minecraft,
-	protected val lastScreen: Screen?,
-	title: String
-) : Screen(StringTextComponent(title)), ILayoutableWidgetContainer {
+abstract class BaseScreen(minecraft: Minecraft, protected val lastScreen: Screen?, title: String) :
+		Screen(StringTextComponent(title)), ILayoutableWidgetContainer {
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 	override val font by lazy { minecraft.fontRenderer }
 	private var initialized = false
@@ -70,6 +72,6 @@ abstract class BaseScreen(
 
 	companion object {
 		const val I18N_PREFIX = "accessibilitymod.gui"
-		fun i18n(key: String, vararg parameters: Any) = I18n.format("${I18N_PREFIX}.$key", *parameters)
+		fun i18n(key: String, vararg parameters: Any) = I18n.format("$I18N_PREFIX.$key", *parameters)
 	}
 }

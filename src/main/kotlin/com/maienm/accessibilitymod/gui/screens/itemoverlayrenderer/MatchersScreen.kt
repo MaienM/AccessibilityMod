@@ -1,7 +1,19 @@
 package com.maienm.accessibilitymod.gui.screens.itemoverlayrenderer
 
 import com.maienm.accessibilitymod.Config
-import com.maienm.accessibilitymod.gui.helpers.*
+import com.maienm.accessibilitymod.gui.helpers.Dimensions
+import com.maienm.accessibilitymod.gui.helpers.YEdge
+import com.maienm.accessibilitymod.gui.helpers.addButton
+import com.maienm.accessibilitymod.gui.helpers.addText
+import com.maienm.accessibilitymod.gui.helpers.centerX
+import com.maienm.accessibilitymod.gui.helpers.renderBackground
+import com.maienm.accessibilitymod.gui.helpers.setHeight
+import com.maienm.accessibilitymod.gui.helpers.setX
+import com.maienm.accessibilitymod.gui.helpers.setX1
+import com.maienm.accessibilitymod.gui.helpers.setX2
+import com.maienm.accessibilitymod.gui.helpers.setY
+import com.maienm.accessibilitymod.gui.helpers.setY1
+import com.maienm.accessibilitymod.gui.helpers.setY2
 import com.maienm.accessibilitymod.gui.screens.BaseScreen
 import com.maienm.accessibilitymod.gui.widgets.ContainerWidget
 import com.maienm.accessibilitymod.gui.widgets.PaginatedListWidget
@@ -11,14 +23,12 @@ import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.Widget
 import net.minecraftforge.fml.client.config.GuiButtonExt
 import org.apache.logging.log4j.LogManager
 import com.electronwill.nightconfig.core.Config as NCConfig
 
 class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
-	BaseScreen(minecraft, lastScreen, i18n("config.matchers.title")) {
-
+		BaseScreen(minecraft, lastScreen, i18n("config.matchers.title")) {
 	override fun init() {
 		super.init()
 
@@ -32,7 +42,8 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			minRowSpacing = 3
 		) { matcher -> MatcherEntry(minecraft!!.fontRenderer, matcher) })
 			.centerX(0.6).setY1(getWidget(-2), offset = 10).setY2(-40)
-		addText(i18n("config.matchers.add")).setX1(0.8, 10).setX2(-10).setY1(getWidget(-2), edge = YEdge.TOP, offset = 2)
+		addText(i18n("config.matchers.add"))
+			.setX1(0.8, 10).setX2(-10).setY1(getWidget(-2), edge = YEdge.TOP, offset = 2)
 		IItemMatcher.TypeRegistry.list().forEach { type ->
 			val baseConfig = NCConfig.inMemory()
 			baseConfig.set<String>("type", type)
@@ -52,9 +63,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			addText(i18n("matchers.$type.name")).setX1(3).setY1(3)
 			IItemMatcher.TypeRegistry.entry(type).fields.entries.forEachIndexed { i, (key, i18nKey) ->
 				addText("${i18n(i18nKey)}: ${matcher.get<String>(key)}")
-					.setX1(3)
-					.setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT)
-					.setY2(-65)
+					.setX1(3).setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT).setY2(-65)
 			}
 			addButton(i18n("config.edit"), ::edit).setX1(-60).setX2(-2).setY1(2).setY2(0.5, -1)
 			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1(0.5, 1).setY2(-2)
@@ -73,8 +82,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	 * Widget to confirm/cancel a deletion. Meant to be rendered on top of a MatcherEntry.
 	 */
 	inner class DeleteConfirm(font: FontRenderer, private val matcher: NCConfig, private val close: () -> Unit) :
-		ContainerWidget(font) {
-
+			ContainerWidget(font) {
 		init {
 			addText(i18n("config.matchers.confirm-delete"), TextWidget.Alignment.CENTER).setY1(5)
 			addButton(i18n("config.delete-confirm"), ::confirm).setX1(2).setX2(0.5, -2).setY(-22, -2)
@@ -99,16 +107,14 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	/**
 	 * Screen to create/edit a matcher.
 	 */
-	inner class EditScreen(minecraft: Minecraft, lastScreen: Screen?, private val matcher: NCConfig) :
-		BaseScreen(
-			minecraft,
-			lastScreen,
-			i18n(
-				"config.matchers.edit.title-${if (matcher.size() == 1) "new" else "existing"}",
-				i18n("matchers.${matcher.get<String>("type")}.name")
-			)
-		) {
-
+	inner class EditScreen(minecraft: Minecraft, lastScreen: Screen?, private val matcher: NCConfig) : BaseScreen(
+		minecraft,
+		lastScreen,
+		i18n(
+			"config.matchers.edit.title-${if (matcher.size() == 1) "new" else "existing"}",
+			i18n("matchers.${matcher.get<String>("type")}.name")
+		)
+	) {
 		private val type: String = matcher["type"]
 
 		private val textWidgets: Map<String, TextFieldWidgetEx> by lazy {
