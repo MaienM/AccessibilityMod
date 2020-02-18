@@ -95,9 +95,15 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41")
 	implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.41")
 
-	// To include other mods while testing, without actually depending on them.
-	// val fg = project.extensions.findByType(DependencyManagementExtension::class.java)!!
-	// implementation(fg.deobf("foo:foo-1.14.4:1.2.3-alpha")) -> "mods/foo-1.14.4-1.2.3-alpha.jar"
+	// Include any mods in the mods/ directory when running, to easily test with other mods present.
+	val fg = project.extensions.findByType(DependencyManagementExtension::class.java)!!
+	fileTree("mods").also { it.include("*.jar") }.forEach {
+		val match = "^(?<B>(?<A>[^-]*)(?:-[0-9.]*)?)-(?<C>.*)$".toPattern().toRegex().find(it.nameWithoutExtension)
+		if (match != null) {
+			val name = "${match.groups.get("A")!!.value}:${match.groups.get("B")!!.value}:${match.groups.get("C")!!.value}"
+			implementation(fg.deobf(name))
+		}
+	}
 }
 
 val compileKotlin: KotlinCompile by tasks
