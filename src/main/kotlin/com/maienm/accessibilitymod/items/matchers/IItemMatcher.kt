@@ -84,11 +84,12 @@ interface IItemMatcher {
 			fields: Map<String, String>,
 			initializer: ItemMatcherInitializer<T>,
 			validator: Validator
-		) {
+		): TypeRegistry {
 			if (classes.containsKey(name)) {
 				throw IllegalArgumentException("IItemMatcher type $name is already registered.")
 			}
 			classes[name] = Entry(fields, initializer, validator)
+			return this
 		}
 
 		fun list() = classes.keys

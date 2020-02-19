@@ -1,6 +1,7 @@
 package com.maienm.accessibilitymod
 
 import com.maienm.accessibilitymod.gui.screens.ConfigScreen
+import com.maienm.accessibilitymod.items.matchers.IDItemMatcher
 import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import com.maienm.accessibilitymod.items.matchers.TagItemMatcher
 import io.opencubes.boxlin.adapter.BoxlinContext
@@ -37,6 +38,7 @@ object AccessibilityMod {
 	private fun initClient() {
 		IItemMatcher.TypeRegistry
 			.register("tag", TagItemMatcher.FIELDS, TagItemMatcher.Companion::fromMap, TagItemMatcher.VALIDATOR)
+			.register("id", IDItemMatcher.FIELDS, IDItemMatcher.Companion::fromMap, IDItemMatcher.VALIDATOR)
 
 		val modLoadingContext = ModLoadingContext.get()
 		modLoadingContext.registerConfig(ModConfig.Type.CLIENT, Config.spec)

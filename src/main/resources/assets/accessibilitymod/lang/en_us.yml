@@ -53,6 +53,12 @@ accessibilitymod:
          errors:
             pattern-syntax: 'Not a valid pattern: %s.'
             pattern-num-capture-groups: Must have exactly one capture group.
+      id:
+         name: ID-based Item Matcher
+         pattern: Pattern
+         errors:
+            pattern-syntax: 'Not a valid pattern: %s.'
+            pattern-num-capture-groups: Must have exactly one capture group.
       errors:
          missing-field: Missing field '%s'.
          unknown-field: Received unknown field '%s'.
