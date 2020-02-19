@@ -1,6 +1,6 @@
 modLoader="boxlin"
 loaderVersion="[3,)"
-issueTrackerURL="https://gitlab.com/maienm/mc-accessibility-mod/issues/"
+issueTrackerURL="https://github.com/MaienM/AccessibilityMod/issues/"
 
 [[mods]]
 modId="accessibilitymod"

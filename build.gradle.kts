@@ -7,6 +7,8 @@ import java.io.PipedReader
 import java.io.PipedWriter
 import java.io.Reader
 import java.io.Writer
+import java.net.URI
+import java.time.LocalDateTime
 
 buildscript {
 	repositories {
@@ -23,18 +25,21 @@ buildscript {
 
 plugins {
 	kotlin("jvm") version "1.3.41"
+	`maven-publish`
 }
 apply(plugin = "net.minecraftforge.gradle")
 
-val group = "com.maienm.accessibilitymod"
-val archivesBaseName = "accessibilitymod"
-val version = "0.1.0-SNAPSHOT"
-
 object versions {
+	val minecraft = "1.14.4"
+	val mod = "0.1.0.0-SNAPSHOT"
 	// http://export.mcpbot.bspk.rs
-	val forge = "1.14.4-28.1.107"
+	val forge = "${versions.minecraft}-28.1.107"
 	val forge_mappings = arrayOf("snapshot", "20190719-1.14.3")
 }
+
+version = "${versions.minecraft}-${versions.mod}"
+group = "com.maienm"
+base.archivesBaseName = "accessibilitymod"
 
 repositories {
 	mavenLocal()
@@ -85,6 +90,61 @@ tasks.withType<ProcessResources> {
 			com.google.gson.Gson().toJson(flattenedConfig, writer)
 		}
 		filter(mutableMapOf("transform" to ::transform), TransformFilter::class.java)
+	}
+}
+
+tasks.withType<Jar> {
+	finalizedBy("reobfJar")
+
+	manifest {
+		attributes["Specification-Title"] = project.name
+		attributes["Specification-Vendor"] = "MaienM"
+		attributes["Specification-Version"] = "1"
+		attributes["Implementation-Title"] = project.name
+		attributes["Implementation-Vendor"] = "MaienM"
+		attributes["Implementation-Version"] = versions.mod
+		attributes["Implementation-Timestamp"] = LocalDateTime.now()
+	}
+}
+
+publishing {
+	publications {
+		create<MavenPublication>(project.name) {
+			from(components["java"])
+
+			pom {
+				withXml {
+					val root = asNode()
+					root.appendNode("name", "AccessibilityMod")
+					root.appendNode("description", "A Minecraft mod attempting to make some things a bit more accessible.")
+					root.appendNode("url", "https://github.com/MaienM/AccessibilityMod")
+				}
+				licenses {
+					license {
+						name.set("MIT License")
+						url.set("http://www.opensource.org/licenses/mit-license.php")
+						distribution.set("repo")
+					}
+				}
+				developers {
+					developer {
+						id.set("maienm")
+						name.set("Michon van Dooren")
+						email.set("michon1992@gmail.com")
+					}
+				}
+				scm {
+					url.set("https://github.com/MaienM/AccessibilityMod")
+					connection.set("scm:git:git://github.com/MaienM/AccessibilityMod.git")
+					developerConnection.set("scm:git:ssh://github.com/MaienM/AccessibilityMod.git")
+				}
+			}
+		}
+	}
+	repositories {
+		maven {
+			url = URI.create("file:///${project.projectDir}/mcmodsrepo")
+		}
 	}
 }
 
