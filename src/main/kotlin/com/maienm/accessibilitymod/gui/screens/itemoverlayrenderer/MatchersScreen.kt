@@ -168,8 +168,8 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				relativeTo = validationWidget
 			}
 
-			addButton(i18n("config.edit-cancel")) { toScreen(lastScreen!!) }.setX1(0.3).setX2(0.5, -1).setY(-30, -10)
-			saveButton = addButton(i18n("config.edit-save"), ::save).setX1(0.5, 1).setX2(0.7).setY(-30, -10).widget
+			addButton(i18n("config.edit-cancel")) { toScreen(lastScreen!!) }.setX1(0.2).setX2(0.5, -1).setY(-30, -10)
+			saveButton = addButton(i18n("config.edit-save"), ::save).setX1(0.5, 1).setX2(0.8).setY(-30, -10).widget
 
 			validate()
 		}
