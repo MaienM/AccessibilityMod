@@ -130,15 +130,23 @@ function initializeCoreMod() {
 		}
 	}
 
-	return {
+	var hooks = {
 		'ItemRenderer.renderItemModelIntoGUI.postHook': {
-			'target': {
-				'type': 'METHOD',
-				'class': 'net.minecraft.client.renderer.ItemRenderer',
-				// protected void renderItemModelIntoGUI(ItemStack stack, int x, int y, IBakedModel bakedmodel)
-				'methodName': 'renderItemModelIntoGUI',
-				'methodDesc': '(Lnet/minecraft/item/ItemStack;IILnet/minecraft/client/renderer/model/IBakedModel;)V',
-			},
+			// protected void renderItemModelIntoGUI(ItemStack stack, int x, int y, IBakedModel bakedmodel)
+			'target': [
+				{
+					'type': 'METHOD',
+					'class': 'net.minecraft.client.renderer.ItemRenderer',
+					'methodName': 'renderItemModelIntoGUI',
+					'methodDesc': '(Lnet/minecraft/item/ItemStack;IILnet/minecraft/client/renderer/model/IBakedModel;)V',
+				},
+				{
+					'type': 'METHOD',
+					'class': 'net.minecraft.client.renderer.ItemRenderer',
+					'methodName': 'func_191962_a',
+					'methodDesc': '(Lnet/minecraft/item/ItemStack;IILnet/minecraft/client/renderer/model/IBakedModel;)V',
+				},
+			],
 			'transformer': withDebugHandling(function (method) {
 				var Opcodes = Java.type('org.objectweb.asm.Opcodes')
 				var InsnList = Java.type('org.objectweb.asm.tree.InsnList')
@@ -172,8 +180,8 @@ function initializeCoreMod() {
 		},
 		// JEI uses a separate method to render items in the right bar (but the regular method for items in the recipes).
 		'ItemStackFastRenderer.uncheckedRenderItemAndEffectIntoGUI.postHook': {
+			// private void uncheckedRenderItemAndEffectIntoGUI(IEditModeConfig editModeConfig, IWorldConfig worldConfig)
 			'target': {
-				// private void uncheckedRenderItemAndEffectIntoGUI(IEditModeConfig editModeConfig, IWorldConfig worldConfig)
 				'type': 'METHOD',
 				'class': 'mezz.jei.render.ItemStackFastRenderer',
 				'methodName': 'uncheckedRenderItemAndEffectIntoGUI',
@@ -186,7 +194,7 @@ function initializeCoreMod() {
 				var VarInsnNode = Java.type('org.objectweb.asm.tree.VarInsnNode')
 				var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode')
 
-				// com.maienm.accessibilitymod.CoreModHooks.INSTANCE.onItemStackFastRendererUncheckedRenderItemAndEffectIntoGUI(stack, x, y, z)
+				// com.maienm.accessibilitymod.CoreModHooks.INSTANCE.onItemStackFastRendererUncheckedRenderItemAndEffectIntoGUI(stack, rect)
 				var toInsert = debugInfo.toInsert = new InsnList()
 				toInsert.add(new FieldInsnNode(
 					Opcodes.GETSTATIC,
@@ -195,24 +203,13 @@ function initializeCoreMod() {
 					'Lcom/maienm/accessibilitymod/CoreModHooks;'
 				))
 				toInsert.add(new VarInsnNode(Opcodes.ALOAD, 3)) // ItemStack
-				// area.getX()
-				toInsert.add(new VarInsnNode(Opcodes.ALOAD, 0))
-				toInsert.add(new FieldInsnNode(
+				toInsert.add(new VarInsnNode(Opcodes.ALOAD, 0)) // this
+				toInsert.add(new FieldInsnNode(                 // .area
 					Opcodes.GETFIELD,
 					'mezz/jei/render/ItemStackFastRenderer',
 					'area',
 					'Lnet/minecraft/client/renderer/Rectangle2d;'
 				))
-				toInsert.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, 'net/minecraft/client/renderer/Rectangle2d', 'getX', '()I'))
-				// area.getY()
-				toInsert.add(new VarInsnNode(Opcodes.ALOAD, 0))
-				toInsert.add(new FieldInsnNode(
-					Opcodes.GETFIELD,
-					'mezz/jei/render/ItemStackFastRenderer',
-					'area',
-					'Lnet/minecraft/client/renderer/Rectangle2d;'
-				))
-				toInsert.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, 'net/minecraft/client/renderer/Rectangle2d', 'getY', '()I'))
 				toInsert.add(new MethodInsnNode(
 					Opcodes.INVOKEVIRTUAL,
 					'com/maienm/accessibilitymod/CoreModHooks',
@@ -229,4 +226,22 @@ function initializeCoreMod() {
 			}),
 		},
 	}
+
+	// Handle alternative targets names, for deobfuscated vs obfuscated.
+	Object.keys(hooks).forEach(function (hookKey) {
+		var hook = hooks[hookKey]
+		if (!Array.isArray(hook.target)) {
+			return
+		}
+
+		delete hooks[hookKey]
+		hook.target.forEach(function (target, i) {
+			var hookForTarget = {}
+			hookForTarget.transformer = hook.transformer
+			hookForTarget.target = target
+			hooks[hookKey + '[' + i + ']'] = hookForTarget
+		})
+	})
+
+	return hooks
 }
