@@ -29,17 +29,30 @@ plugins {
 }
 apply(plugin = "net.minecraftforge.gradle")
 
-object versions {
-	val minecraft = "1.14.4"
-	val mod = "0.1.0.0-SNAPSHOT"
-	// http://export.mcpbot.bspk.rs
-	val forge = "${versions.minecraft}-28.1.107"
-	val forge_mappings = arrayOf("snapshot", "20190719-1.14.3")
+// Determine the current version based on the git tags.
+// If HEAD is tagged, the version of this tag is used. If not, MINOR is incremented and -SNAPSHOT is added.
+// The tag format is v{minecraftVersion}-{version}.
+val gitLastTag = "git describe --tags --abbrev=0".runCommand()!!.trim()
+val gitCurrentTag = "git describe --tags".runCommand()!!.trim()
+val match = "^v(\\d+\\.\\d+\\.\\d+)-(\\d+\\.\\d+\\.\\d+)$".toPattern().matcher(gitLastTag)
+if (!match.matches()) {
+	throw Exception("Unable to parse version from git tag.")
+}
+val minecraftVersion = match.group(1)!!
+val modVersion = if (gitLastTag != gitCurrentTag) {
+	val parts = match.group(2)!!.split(".").map(Integer::parseInt).toMutableList()
+	parts.add(parts.removeAt(parts.size - 1) + 1)
+	parts.joinToString(".") + "-SNAPSHOT"
+} else {
+	match.group(2)!!
 }
 
-version = "${versions.minecraft}-${versions.mod}"
+version = "$minecraftVersion-$modVersion"
 group = "com.maienm"
 base.archivesBaseName = "accessibilitymod"
+
+val forgeVersion = "$minecraftVersion-28.1.107"
+val forgeMappingsVersion = arrayOf("snapshot", "20190719-1.14.3") // http://export.mcpbot.bspk.rs
 
 repositories {
 	mavenLocal()
@@ -51,7 +64,7 @@ repositories {
 }
 
 configure<UserDevExtension> {
-	mappings(versions.forge_mappings[0], versions.forge_mappings[1])
+	mappings(forgeMappingsVersion[0], forgeMappingsVersion[1])
 
 	runs {
 		val sharedConfig = Action<RunConfig> {
@@ -102,7 +115,7 @@ tasks.withType<Jar> {
 		attributes["Specification-Version"] = "1"
 		attributes["Implementation-Title"] = project.name
 		attributes["Implementation-Vendor"] = "MaienM"
-		attributes["Implementation-Version"] = versions.mod
+		attributes["Implementation-Version"] = modVersion
 		attributes["Implementation-Timestamp"] = LocalDateTime.now()
 	}
 }
@@ -149,7 +162,7 @@ publishing {
 }
 
 dependencies {
-	"minecraft"("net.minecraftforge:forge:${versions.forge}")
+	"minecraft"("net.minecraftforge:forge:$forgeVersion")
 
 	implementation("io.opencubes:boxlin:3.0.1")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41")
@@ -208,5 +221,27 @@ fun walkNestedMaps(
 			callback(keys, entry.value)
 		}
 		keys.removeAt(keys.size - 1)
+	}
+}
+
+/**
+ * Run a command from within the project directory root.
+ *
+ * From https://stackoverflow.com/a/41495542.
+ */
+fun String.runCommand(): String? {
+	try {
+		val parts = this.split("\\s".toRegex())
+		val proc = ProcessBuilder(*parts.toTypedArray())
+			.directory(projectDir)
+			.redirectOutput(ProcessBuilder.Redirect.PIPE)
+			.redirectError(ProcessBuilder.Redirect.PIPE)
+			.start()
+
+		proc.waitFor(10, TimeUnit.SECONDS)
+		return proc.inputStream.bufferedReader().readText()
+	} catch (e: java.io.IOException) {
+		e.printStackTrace()
+		return null
 	}
 }
