@@ -23,5 +23,8 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
+
 mods/
 mcmodsrepo/
+scripts/
+mcp/
