@@ -19,6 +19,6 @@ class ConfigScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
 		addButton(i18n("config.overlay.title")) { toScreen(::OverviewScreen) }
 			.centerX(0.6).setY1(getWidget(-2), offset = 10).setHeight(20)
-		addButton(i18n("config.close")) { toScreen(lastScreen!!) }.centerX(0.6).setY(-30, -10)
+		addButton(i18n("config.close")) { toScreen(lastScreen) }.centerX(0.6).setY(-30, -10)
 	}
 }

@@ -2,7 +2,7 @@ accessibilitymod:
    gui.config:
       title: Accessibility Mod Config
 
-      close: Return to main menu
+      close: Close
       back: Back
 
       edit: Edit
@@ -62,3 +62,7 @@ accessibilitymod:
       errors:
          missing-field: Missing field '%s'.
          unknown-field: Received unknown field '%s'.
+
+   key:
+      category: Accessibility Mod
+      config: Config

@@ -36,7 +36,7 @@ abstract class BaseScreen(minecraft: Minecraft, protected val lastScreen: Screen
 
 	override fun getArea() = Area(0, 0, width, height)
 
-	protected fun toScreen(screen: Screen) = minecraft!!.displayGuiScreen(screen)
+	protected fun toScreen(screen: Screen?) = minecraft!!.displayGuiScreen(screen)
 	protected fun toScreen(constructor: (Minecraft, Screen?) -> BaseScreen) = toScreen(constructor(minecraft!!, this))
 
 	override fun init() {
