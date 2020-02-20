@@ -67,8 +67,8 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		init {
 			keyText = addText(key).setX1(6).setX2(0.5, -58).setY1(4).widget
 			valueText = addText(Config.ItemMaterialOverlay.materialNames[key]).setX1(0.5, -55).setX2(-113).setY1(4).widget
-			addButton(i18n("config.edit"), ::edit).setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, _ -> height + 2 }
-			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, _ -> height + 2 }
+			addButton(i18n("config.edit"), ::edit).setX1(-118).setX2(-60).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
+			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
 
 			if (key.isEmpty()) {
 				edit()
@@ -97,11 +97,11 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	inner class DeleteOverlay(font: FontRenderer, private val key: String, private val close: () -> Unit) :
 			ContainerWidget(font) {
 		init {
-			addText(i18n("config.mappings.confirm-delete")).setX1(4).setY1 { (it - font.FONT_HEIGHT) / 2 }
+			addText(i18n("config.mappings.confirm-delete")).setX1(4).setY1 { dim -> (dim - font.FONT_HEIGHT) / 2 }
 			addButton(i18n("config.delete-confirm"), ::confirm)
-				.setX1(-118).setX2(-60).setY1 { -2 }.setY2 { height, _ -> height + 2 }
+				.setX1(-118).setX2(-60).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
 			addButton(i18n("config.delete-cancel"), ::cancel)
-				.setX1(-60).setX2(-2).setY1 { -2 }.setY2 { height, _ -> height + 2 }
+				.setX1(-60).setX2(-2).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
 		}
 
 		private fun confirm() {
@@ -143,12 +143,12 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				addText(key).setX1(6).setX2(0.5, -58).setY1(4)
 			}
 			layout(nameField).setX1(0.5, -59).setX2(-119)
-			addButton(i18n("config.edit-save"), ::confirm).setX1(-118).setX2(-60).setY1 { -2 }
-				.setY2 { height, _ -> height + 2 }.also {
+			addButton(i18n("config.edit-save"), ::confirm)
+				.setX1(-118).setX2(-60).setY1 { _ -> -2 }.setY2 { height -> height + 2 }.also {
 					saveButton = it.widget
 				}
-			addButton(i18n("config.edit-cancel"), ::cancel).setX1(-60).setX2(-2).setY1 { -2 }
-				.setY2 { height, _ -> height + 2 }
+			addButton(i18n("config.edit-cancel"), ::cancel)
+				.setX1(-60).setX2(-2).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
 		}
 
 		private fun confirm() {

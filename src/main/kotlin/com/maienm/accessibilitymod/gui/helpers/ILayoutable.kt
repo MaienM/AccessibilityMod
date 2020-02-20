@@ -20,7 +20,8 @@ enum class YEdge { TOP, BOTTOM }
 fun <T : ILayoutable> T.setX1(calculator: IFirstPositionCalculator) = apply { doSetX1(calculator) }
 fun <T : ILayoutable> T.setX1(value: Int) = setX1(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setX1(fraction: Double, offset: Int = 0) = setX1(FractionFPC(fraction, offset))
-fun <T : ILayoutable> T.setX1(calculation: (Int) -> Int) = setX1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setX1(calculation: (Int, Int) -> Int) = setX1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setX1(calculation: (Int) -> Int) = setX1 { dim, _ -> calculation(dim) }
 fun <T : ILayoutable> T.setX1(widget: Widget, edge: XEdge = XEdge.RIGHT, offset: Int = 0, offsetWhenHidden: Int = 0) =
 	setX1(RelativeXFPC(widget, edge, offset, offsetWhenHidden))
 
@@ -28,8 +29,9 @@ fun <T : ILayoutable> T.setX2(calculator: ISecondPositionCalculator) = apply { d
 fun <T : ILayoutable> T.setX2(calculator: IFirstPositionCalculator) = setX2(FPCAsSPC(calculator))
 fun <T : ILayoutable> T.setX2(value: Int) = setX2(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setX2(fraction: Double, offset: Int = 0) = setX2(FractionFPC(fraction, offset))
-fun <T : ILayoutable> T.setX2(calculation: (Int, Int) -> Int) = setX2(CustomSPC(calculation))
-fun <T : ILayoutable> T.setX2(calculation: (Int) -> Int) = setX2(CustomSPC { dim, _ -> calculation(dim) })
+fun <T : ILayoutable> T.setX2(calculation: (Int, Int, Int) -> Int) = setX2(CustomSPC(calculation))
+fun <T : ILayoutable> T.setX2(calculation: (Int, Int) -> Int) = setX2 { dim, pOffset, _ -> calculation(dim, pOffset) }
+fun <T : ILayoutable> T.setX2(calculation: (Int) -> Int) = setX2 { dim, _, _ -> calculation(dim) }
 fun <T : ILayoutable> T.setX2(widget: Widget, edge: XEdge = XEdge.RIGHT, offset: Int = 0, offsetWhenHidden: Int = 0) =
 	setX2(RelativeXFPC(widget, edge, offset, offsetWhenHidden))
 
@@ -39,7 +41,8 @@ fun <T : ILayoutable> T.setWidth(fraction: Double, offset: Int = 0) = setX2(Frac
 fun <T : ILayoutable> T.setY1(calculator: IFirstPositionCalculator) = apply { doSetY1(calculator) }
 fun <T : ILayoutable> T.setY1(value: Int) = setY1(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setY1(fraction: Double, offset: Int = 0) = setY1(FractionFPC(fraction, offset))
-fun <T : ILayoutable> T.setY1(calculation: (Int) -> Int) = setY1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setY1(calculation: (Int, Int) -> Int) = setY1(CustomFPC(calculation))
+fun <T : ILayoutable> T.setY1(calculation: (Int) -> Int) = setY1 { dim, _ -> calculation(dim) }
 fun <T : ILayoutable> T.setY1(widget: Widget, edge: YEdge = YEdge.BOTTOM, offset: Int = 0) =
 	setY1(RelativeYFPC(widget, edge, offset))
 
@@ -47,8 +50,9 @@ fun <T : ILayoutable> T.setY2(calculator: ISecondPositionCalculator) = apply { d
 fun <T : ILayoutable> T.setY2(calculator: IFirstPositionCalculator) = setY2(FPCAsSPC(calculator))
 fun <T : ILayoutable> T.setY2(value: Int) = setY2(AbsoluteFPC(value))
 fun <T : ILayoutable> T.setY2(fraction: Double, offset: Int = 0) = setY2(FractionFPC(fraction, offset))
-fun <T : ILayoutable> T.setY2(calculation: (Int, Int) -> Int) = setY2(CustomSPC(calculation))
-fun <T : ILayoutable> T.setY2(calculation: (Int) -> Int) = setY2(CustomSPC { dim, _ -> calculation(dim) })
+fun <T : ILayoutable> T.setY2(calculation: (Int, Int, Int) -> Int) = setY2(CustomSPC(calculation))
+fun <T : ILayoutable> T.setY2(calculation: (Int, Int) -> Int) = setY2 { dim, pOffset, _ -> calculation(dim, pOffset) }
+fun <T : ILayoutable> T.setY2(calculation: (Int) -> Int) = setY2 { dim, _, _ -> calculation(dim) }
 fun <T : ILayoutable> T.setY2(widget: Widget, edge: YEdge = YEdge.BOTTOM, offset: Int = 0) =
 	setY2(RelativeYFPC(widget, edge, offset))
 
@@ -92,11 +96,11 @@ class Layoutable(
 	}
 
 	fun toArea(parentArea: Area): Area {
-		val x1 = parentArea.x + x1.calculate(parentArea.width)
-		val x2 = parentArea.x + x2.calculate(parentArea.width, x1)
-		val y1 = parentArea.y + y1.calculate(parentArea.height)
-		val y2 = parentArea.y + y2.calculate(parentArea.height, y1)
-		return Area(x1, y1, x2 - x1, y2 - y1)
+		val x1 = x1.calculate(parentArea.width, parentArea.x)
+		val x2 = x2.calculate(parentArea.width, parentArea.x, x1)
+		val y1 = y1.calculate(parentArea.height, parentArea.y)
+		val y2 = y2.calculate(parentArea.height, parentArea.y, y1)
+		return Area(parentArea.x + x1, parentArea.y + y1, x2 - x1, y2 - y1)
 	}
 }
 
@@ -105,15 +109,16 @@ private fun wrap(value: Int, dimension: Int) = if (value < 0) value + dimension 
 // Calculation of x1 and y1.
 
 interface IFirstPositionCalculator {
-	fun calculate(dimension: Int): Int
+	fun calculate(dimension: Int, parentOffset: Int): Int
 }
 
 private class AbsoluteFPC(val value: Int) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int): Int = wrap(value, dimension)
+	override fun calculate(dimension: Int, parentOffset: Int): Int = wrap(value, dimension)
 }
 
 private class FractionFPC(val fraction: Double, val offset: Int = 0) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int): Int = wrap((fraction * dimension + offset).toInt(), dimension)
+	override fun calculate(dimension: Int, parentOffset: Int): Int =
+		wrap((fraction * dimension + offset).toInt(), dimension)
 }
 
 private fun Widget.hidden() = width == 0 || height == 0
@@ -124,8 +129,10 @@ private class RelativeXFPC(
 	val offset: Int = 0,
 	val offsetWhenHidden: Int
 ) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int): Int =
-		widget.x + (if (edge == XEdge.RIGHT) widget.width else 0) + (if (widget.hidden()) offsetWhenHidden else offset)
+	private val currentOffset: Int
+		get() = if (widget.hidden()) offsetWhenHidden else offset
+	override fun calculate(dimension: Int, parentOffset: Int): Int =
+		widget.x - parentOffset + (if (edge == XEdge.RIGHT) widget.width else 0) + currentOffset
 }
 
 private class RelativeYFPC(
@@ -134,33 +141,37 @@ private class RelativeYFPC(
 	val offset: Int = 0,
 	val offsetWhenHidden: Int = 0
 ) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int): Int =
-		widget.y + (if (edge == YEdge.BOTTOM) widget.height else 0) + (if (widget.hidden()) offsetWhenHidden else offset)
+	private val currentOffset: Int
+		get() = if (widget.hidden()) offsetWhenHidden else offset
+	override fun calculate(dimension: Int, parentOffset: Int): Int =
+		widget.y - parentOffset + (if (edge == YEdge.BOTTOM) widget.height else 0) + currentOffset
 }
 
-private class CustomFPC(val calculation: (Int) -> Int) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int): Int = calculation(dimension)
+private class CustomFPC(val calculation: (Int, Int) -> Int) : IFirstPositionCalculator {
+	override fun calculate(dimension: Int, parentOffset: Int): Int = calculation(dimension, parentOffset)
 }
 
 // Calculation of x2 and y2
 
 interface ISecondPositionCalculator {
-	fun calculate(dimension: Int, firstPosition: Int): Int
+	fun calculate(dimension: Int, parentOffset: Int, firstPosition: Int): Int
 }
 
 private class FPCAsSPC(val fpc: IFirstPositionCalculator) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPosition: Int): Int = fpc.calculate(dimension)
+	override fun calculate(dimension: Int, parentOffset: Int, firstPosition: Int): Int =
+		fpc.calculate(dimension, parentOffset)
 }
 
-private class CustomSPC(val calculation: (Int, Int) -> Int) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPosition: Int): Int = calculation(dimension, firstPosition)
+private class CustomSPC(val calculation: (Int, Int, Int) -> Int) : ISecondPositionCalculator {
+	override fun calculate(dimension: Int, parentOffset: Int, firstPosition: Int): Int =
+		calculation(dimension, parentOffset, firstPosition)
 }
 
 private class AbsoluteSizeSPC(val size: Int) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPosition: Int): Int = firstPosition + size
+	override fun calculate(dimension: Int, parentOffset: Int, firstPosition: Int): Int = firstPosition + size
 }
 
 private class FractionSizeSPC(val fraction: Double, val offset: Int = 0) : ISecondPositionCalculator {
-	override fun calculate(dimension: Int, firstPosition: Int): Int =
+	override fun calculate(dimension: Int, parentOffset: Int, firstPosition: Int): Int =
 		firstPosition + (fraction * dimension).toInt() + offset
 }
