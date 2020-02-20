@@ -45,7 +45,7 @@ class TextWidget(
 		font.drawStringWithShadow(line, x + xOffset, y + yOffset, color)
 	}
 
-	fun calculateHeight() = calculateLines { _, _ -> }.toInt()
+	fun calculateHeight() = calculateLines { _, _ -> }.toInt().also { height = it }
 
 	override fun setHeight(value: Int) {
 		// Auto-determined, so don't actually set.

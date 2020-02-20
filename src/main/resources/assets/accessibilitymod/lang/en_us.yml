@@ -33,6 +33,12 @@ accessibilitymod:
          edit:
             title-new: Create %s
             title-existing: Edit %s
+         preview:
+            title: Preview matching items
+            count: '%d matching item(s).'
+            not-in-world:
+               Preview is not available while not in a world, because some settings are/can be determined by the server.
+               Join a world, open the config using the keybinding, and try again.
 
       mappings:
          title: Item Material Overlay Mappings

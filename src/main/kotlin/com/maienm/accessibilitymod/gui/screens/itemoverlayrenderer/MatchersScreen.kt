@@ -23,7 +23,10 @@ import com.maienm.accessibilitymod.items.matchers.IItemMatcher
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraftforge.fml.client.config.GuiButtonExt
+import net.minecraftforge.fml.common.registry.GameRegistry
 import org.apache.logging.log4j.LogManager
 import com.electronwill.nightconfig.core.Config as NCConfig
 
@@ -128,6 +131,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				TextWidget(minecraft.fontRenderer, "")
 			}
 		}
+		private val previewContainer = ItemPreview(minecraft.fontRenderer)
 		private lateinit var saveButton: GuiButtonExt
 
 		private val data: MutableMap<String, Any> = HashMap(matcher.valueMap())
@@ -168,6 +172,8 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				relativeTo = validationWidget
 			}
 
+			layout(previewContainer).centerX(0.6).setY1(relativeTo, offset = 10).setY2(-40)
+
 			addButton(i18n("config.edit-cancel")) { toScreen(lastScreen!!) }.setX1(0.2).setX2(0.5, -1).setY(-30, -10)
 			saveButton = addButton(i18n("config.edit-save"), ::save).setX1(0.5, 1).setX2(0.8).setY(-30, -10).widget
 
@@ -175,21 +181,18 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		}
 
 		private fun validate() {
-			if (!needsUpdate) {
-				return
-			}
-
 			textWidgets.forEach { (key, field) -> data[key] = field.text }
 			val result = IItemMatcher.TypeRegistry.validate(data)
 			if (validationResult == result) {
 				return
 			}
 
-			applyValidationResult(result)
+			updateValidationMessages(result)
+			updatePreview()
 			updateAreas()
 		}
 
-		private fun applyValidationResult(result: IItemMatcher.Validator.Result) {
+		private fun updateValidationMessages(result: IItemMatcher.Validator.Result) {
 			validationResult = result
 			validationWidgets.forEach { (key, text) ->
 				text.message = result.get(key).joinToString("\n")
@@ -198,6 +201,14 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			generalValidationWidget.message = result.getMissed().joinToString("\n")
 			generalValidationWidget.calculateHeight()
 			saveButton.active = valid
+		}
+
+		private fun updatePreview() {
+			if (valid) {
+				previewContainer.matcher = IItemMatcher.TypeRegistry.create(data)
+			} else {
+				previewContainer.matcher = null
+			}
 		}
 
 		private fun save() {
@@ -212,8 +223,99 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		}
 
 		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-			validate()
+			if (needsUpdate) {
+				validate()
+			}
 			super.render(mouseX, mouseY, partialT)
+		}
+	}
+
+	inner class ItemPreview(font: FontRenderer, matcher: IItemMatcher? = null) : ContainerWidget(font) {
+		private var needsUpdate = false
+		var matcher: IItemMatcher? = matcher
+			get
+			set(value) {
+				needsUpdate = true
+				field = value
+			}
+
+		private val itemRegistry = GameRegistry.findRegistry(Item::class.java)
+
+		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
+			if (needsUpdate) {
+				updatePreview()
+				needsUpdate = false
+			}
+			updateAreas()
+			super.render(mouseX, mouseY, partialT)
+		}
+
+		override fun renderBackground() {
+			super.renderBackground()
+			renderBackground(minecraft!!, getArea())
+		}
+
+		private fun updatePreview() {
+			clear()
+			val matcher = matcher ?: return
+
+			addText(i18n("config.matchers.preview.title"))
+				.widget.calculateHeight() // Height needs to be calculated now to determine the amount of preview items
+			if (minecraft?.world == null) {
+				addText(i18n("config.matchers.preview.not-in-world")).setY1(getWidget(-1), offset = 2)
+				return
+			}
+
+			val matchingItems = itemRegistry.values
+				.map(Item::getDefaultInstance)
+				.map { it to matcher.getMaterials(it) }
+				.filter { it.second.any() }
+			val text = addText(i18n("config.matchers.preview.count", matchingItems.size)).setY1(getWidget(-1), offset = 2).widget
+			updateAreas()
+
+			val spacing = 1
+			var remainingHeight = height + spacing - (text.y + text.calculateHeight() - y)
+			val previewWidgets = matchingItems
+				.map { ItemPreviewEntry(minecraft!!.fontRenderer, it.first, it.second) }
+				.take(25) // Hard limit, in case something goes wrong with the calculation below
+				.takeWhile {
+					it.width = width
+					remainingHeight -= it.calculateHeight() + spacing
+					remainingHeight >= 0
+				}
+			previewWidgets.forEachIndexed { i, widget ->
+				layout(widget).setY1(if (i == 0) text else previewWidgets[i - 1], offset = spacing)
+			}
+		}
+	}
+
+	inner class ItemPreviewEntry(font: FontRenderer, private val itemStack: ItemStack, materials: Iterable<String>) :
+			ContainerWidget(font) {
+		private val textWidget = TextWidget(font, "")
+		private val itemRenderer = minecraft!!.itemRenderer
+		private val textOffset = (16 - font.FONT_HEIGHT) / 2
+
+		init {
+			textWidget.message =
+				"${itemStack.displayName.formattedText}\n${materials.map { "material = $it" }.joinToString("\n")}"
+			layout(textWidget).setX1(20).setY1(textOffset)
+		}
+
+		override fun setHeight(value: Int) {
+			// Auto-calculated, so don't actually apply height
+		}
+
+		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
+			this.height = calculateHeight()
+			// renderBackground(minecraft!!, getArea())
+			super.render(mouseX, mouseY, partialT)
+
+			itemRenderer.renderItemIntoGUI(itemStack, x, y)
+		}
+
+		fun calculateHeight(): Int {
+			updateAreas()
+			return maxOf(16, textOffset + textWidget.calculateHeight())
 		}
 	}
 
