@@ -62,14 +62,16 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	 */
 	inner class MatcherEntry(font: FontRenderer, private val matcher: NCConfig) : ContainerWidget(font) {
 		init {
+			padding = 3
+
 			val type: String = matcher["type"]
-			addText(i18n("matchers.$type.name")).setX1(3).setY1(3)
+			addText(i18n("matchers.$type.name"))
 			IItemMatcher.TypeRegistry.entry(type).fields.entries.forEachIndexed { i, (key, i18nKey) ->
 				addText("${i18n(i18nKey)}: ${matcher.get<String>(key)}")
-					.setX1(3).setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT).setY2(-65)
+					.setY1(18 + i * minecraft!!.fontRenderer.FONT_HEIGHT).setY2(-65)
 			}
-			addButton(i18n("config.edit"), ::edit).setX1(-60).setX2(-2).setY1(2).setY2(0.5, -1)
-			addButton(i18n("config.delete"), ::delete).setX1(-60).setX2(-2).setY1(0.5, 1).setY2(-2)
+			addButton(i18n("config.edit"), ::edit).setX1(-60).setY2(0.5, -1)
+			addButton(i18n("config.delete"), ::delete).setX1(-60).setY1(0.5, 1)
 		}
 
 		private fun edit() {
@@ -87,9 +89,11 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	inner class DeleteConfirm(font: FontRenderer, private val matcher: NCConfig, private val close: () -> Unit) :
 			ContainerWidget(font) {
 		init {
-			addText(i18n("config.matchers.confirm-delete"), TextWidget.Alignment.CENTER).setY1(5)
-			addButton(i18n("config.delete-confirm"), ::confirm).setX1(2).setX2(0.5, -2).setY(-22, -2)
-			addButton(i18n("config.delete-cancel"), ::cancel).setX1(0.5, 2).setX2(-2).setY(-22, -2)
+			padding = 3
+
+			addText(i18n("config.matchers.confirm-delete"), TextWidget.Alignment.CENTER).setY1(2)
+			addButton(i18n("config.delete-confirm"), ::confirm).setX2(0.5, -2).setY1(-20)
+			addButton(i18n("config.delete-cancel"), ::cancel).setX1(0.5, 2).setY1(-20)
 		}
 
 		private fun confirm() {
@@ -154,13 +158,10 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				val validationWidget = validationWidgets[key] ?: return
 
 				// Position relative to the bottom of the validation message above, to allow repositioning when validation errors are shown.
-				val fieldLayout = layout(textWidget)
-					.setX(0.3, 0.8)
-					.setY1(relativeTo, offset = if (i == 0) 10 else 3)
-					.setHeight(20)
+				layout(textWidget).setX(0.3, 0.8).setY1(relativeTo, offset = if (i == 0) 10 else 3).setHeight(20)
 
 				// Label to the left and slightly down, to center it vertically.
-				addText("${i18n(i18nKey)}:").setX1(0.2).setY1(fieldLayout.widget, YEdge.TOP, textOffset)
+				addText("${i18n(i18nKey)}:").setX1(0.2).setY1(textWidget, YEdge.TOP, textOffset)
 
 				// Validation text below the input. Keep reference to position the next element relative to it.
 				layout(validationWidget).setX(0.3, 0.8).setY1(textWidget, offset = 3)
@@ -233,6 +234,10 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 				needsUpdate = true
 				field = value
 			}
+
+		init {
+			padding = 3
+		}
 
 		private val itemRegistry = GameRegistry.findRegistry(Item::class.java)
 

@@ -96,7 +96,7 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	inner class DeleteOverlay(font: FontRenderer, private val key: String, private val close: () -> Unit) :
 			ContainerWidget(font) {
 		init {
-			addText(i18n("config.mappings.confirm-delete")).setX1(4).setY1 { dim -> (dim - font.FONT_HEIGHT) / 2 }
+			addText(i18n("config.mappings.confirm-delete")).setX1(6).setY1 { dim -> (dim - font.FONT_HEIGHT) / 2 + 1 }
 			addButton(i18n("config.delete-confirm"), ::confirm)
 				.setX1(-118).setX2(-60).setY1 { _ -> -2 }.setY2 { height -> height + 2 }
 			addButton(i18n("config.delete-cancel"), ::cancel)
