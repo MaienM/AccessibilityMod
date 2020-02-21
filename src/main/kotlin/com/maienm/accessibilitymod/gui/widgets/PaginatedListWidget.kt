@@ -95,7 +95,7 @@ class PaginatedListWidget<T>(
 
 		paginationContainer = layout(ContainerWidget(font))
 		paginationButtonPrev = paginationContainer.widget.addButton("<<") { page -= 1 }.setX1(0.0).setX2(0.5, -25)
-		paginationText = paginationContainer.widget.addText("0/0", TextWidget.Alignment.CENTER).centerX(50)
+		paginationText = paginationContainer.widget.addText("0/0", alignment = TextWidget.Alignment.CENTER).centerX(50)
 		paginationButtonNext = paginationContainer.widget.addButton(">>") { page += 1 }.setX1(0.5, 25).setX2(1.0)
 	}
 
@@ -121,7 +121,7 @@ class PaginatedListWidget<T>(
 		when (growRows) {
 			GrowMode.STRETCH -> widgetHeight += rowRemainder / rows
 			GrowMode.SPACING -> rowSpacing += rowRemainder / rows
-			else -> {}
+			else -> Unit
 		}
 
 		widgetWidth = minWidgetSize.width
@@ -130,7 +130,7 @@ class PaginatedListWidget<T>(
 		when (growColumns) {
 			GrowMode.STRETCH -> widgetWidth += columnRemainder / columns
 			GrowMode.SPACING -> columnSpacing += columnRemainder / (columns - 1)
-			else -> {}
+			else -> Unit
 		}
 
 		pages = ceil(items.size / pageSize.toFloat()).toInt()

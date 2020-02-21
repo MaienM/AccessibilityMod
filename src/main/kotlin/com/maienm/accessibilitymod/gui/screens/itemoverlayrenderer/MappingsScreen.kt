@@ -39,7 +39,7 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	override fun init() {
 		super.init()
 
-		addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
+		addText(title.formattedText, 1.2, TextWidget.Alignment.CENTER).setY1(15)
 		addText(i18n("config.mappings.description")).centerX(0.5).setY1(getWidget(-2), offset = 10)
 		layout(list).centerX(0.6).setY1(getWidget(-2), offset = 10).setY2(-40)
 		addButton(i18n("config.mappings.add")) {

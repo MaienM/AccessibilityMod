@@ -35,7 +35,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 	override fun init() {
 		super.init()
 
-		addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
+		addText(title.formattedText, 1.2, TextWidget.Alignment.CENTER).setY1(15)
 		addText(i18n("config.matchers.description")).centerX(0.5).setY1(getWidget(-2), offset = 10)
 		layout(PaginatedListWidget(
 			minecraft!!.fontRenderer,
@@ -91,7 +91,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		init {
 			padding = 3
 
-			addText(i18n("config.matchers.confirm-delete"), TextWidget.Alignment.CENTER).setY1(2)
+			addText(i18n("config.matchers.confirm-delete"), alignment = TextWidget.Alignment.CENTER).setY1(2)
 			addButton(i18n("config.delete-confirm"), ::confirm).setX2(0.5, -2).setY1(-20)
 			addButton(i18n("config.delete-cancel"), ::cancel).setX1(0.5, 2).setY1(-20)
 		}
@@ -148,7 +148,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		override fun init() {
 			super.init()
 
-			addText(title.formattedText, TextWidget.Alignment.CENTER).setY1(15)
+			addText(title.formattedText, 1.2, TextWidget.Alignment.CENTER).setY1(15)
 			layout(generalValidationWidget).centerX(0.5).setY1(getWidget(-2), offset = 10)
 
 			var relativeTo = generalValidationWidget

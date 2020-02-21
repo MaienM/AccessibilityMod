@@ -1,8 +1,10 @@
 package com.maienm.accessibilitymod.gui.widgets
 
+import com.mojang.blaze3d.platform.GlStateManager
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.util.text.TextFormatting
+import kotlin.math.roundToInt
 
 /**
  * A simple widget that displays text.
@@ -10,20 +12,21 @@ import net.minecraft.util.text.TextFormatting
 class TextWidget(
 	private val font: FontRenderer,
 	message: String,
+	var scale: Double = 1.0,
 	var color: Int = TextFormatting.WHITE.color!!,
 	var alignment: Alignment = Alignment.LEFT
 ) : Widget(0, 0, 0, 0, message) {
 	enum class Alignment { LEFT, CENTER, RIGHT }
 
-	private fun calculateLines(eachLine: (String, Float) -> Unit): Float {
+	private fun calculateLines(eachLine: (String, Double) -> Unit): Double {
 		if (message.isEmpty()) {
-			return 0f
+			return 0.0
 		}
 
-		val height = font.FONT_HEIGHT.toFloat()
-		var yOffset = 0f
+		val height = font.FONT_HEIGHT * scale
+		var yOffset = 0.0
 		message.split("\n").forEach { paragraph ->
-			font.listFormattedStringToWidth(paragraph, width).forEach { line ->
+			font.listFormattedStringToWidth(paragraph, (width / scale).roundToInt()).forEach { line ->
 				eachLine(line, yOffset)
 				yOffset += LINE_SPACING * height
 			}
@@ -33,19 +36,22 @@ class TextWidget(
 	}
 
 	override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-		this.height = calculateLines(::renderLine).toInt()
+		GlStateManager.pushMatrix()
+		GlStateManager.scaled(scale, scale, scale)
+		this.height = calculateLines(::renderLine).roundToInt()
+		GlStateManager.popMatrix()
 	}
 
-	private fun renderLine(line: String, yOffset: Float) {
-		val xOffset: Float = when (alignment) {
-			Alignment.LEFT -> 0f
-			Alignment.CENTER -> (width - font.getStringWidth(line)) / 2f
-			Alignment.RIGHT -> (width - font.getStringWidth(line)).toFloat()
+	private fun renderLine(line: String, yOffset: Double) {
+		val xOffset = when (alignment) {
+			Alignment.LEFT -> 0.0
+			Alignment.CENTER -> (width - font.getStringWidth(line) * scale) / 2
+			Alignment.RIGHT -> width - font.getStringWidth(line) * scale
 		}
-		font.drawStringWithShadow(line, x + xOffset, y + yOffset, color)
+		font.drawStringWithShadow(line, ((x + xOffset) / scale).toFloat(), ((y + yOffset) / scale).toFloat(), color)
 	}
 
-	fun calculateHeight() = calculateLines { _, _ -> }.toInt().also { height = it }
+	fun calculateHeight() = calculateLines { _, _ -> }.roundToInt().also { height = it }
 
 	override fun setHeight(value: Int) {
 		// Auto-determined, so don't actually set.

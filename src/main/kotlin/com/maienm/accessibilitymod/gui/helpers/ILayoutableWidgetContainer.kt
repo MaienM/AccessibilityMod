@@ -39,5 +39,8 @@ interface ILayoutableWidgetContainer {
 fun <T : ILayoutableWidgetContainer> T.addButton(text: String, action: () -> Unit) =
 	layout(GuiButtonExt(0, 0, 0, 0, text, Button.IPressable { action() }))
 
-fun <T : ILayoutableWidgetContainer> T.addText(text: String, alignment: Alignment = Alignment.LEFT) =
-	layout(TextWidget(font, text, alignment = alignment))
+fun <T : ILayoutableWidgetContainer> T.addText(
+	text: String,
+	scale: Double = 1.0,
+	alignment: Alignment = Alignment.LEFT
+) = layout(TextWidget(font, text, scale = scale, alignment = alignment))
