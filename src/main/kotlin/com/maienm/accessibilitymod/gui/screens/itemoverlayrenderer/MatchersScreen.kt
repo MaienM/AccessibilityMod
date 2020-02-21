@@ -1,7 +1,9 @@
 package com.maienm.accessibilitymod.gui.screens.itemoverlayrenderer
 
 import com.maienm.accessibilitymod.Config
+import com.maienm.accessibilitymod.gui.helpers.Area
 import com.maienm.accessibilitymod.gui.helpers.Dimensions
+import com.maienm.accessibilitymod.gui.helpers.XEdge
 import com.maienm.accessibilitymod.gui.helpers.YEdge
 import com.maienm.accessibilitymod.gui.helpers.addButton
 import com.maienm.accessibilitymod.gui.helpers.addText
@@ -241,9 +243,60 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 
 		private val itemRegistry = GameRegistry.findRegistry(Item::class.java)
 
+		private fun init() {
+			clear()
+			val matcher = matcher ?: return
+			if (minecraft?.world == null) {
+				addText(i18n("config.matchers.preview.not-in-world"))
+				return
+			}
+
+			val matchingItems = itemRegistry.values
+				.map(Item::getDefaultInstance)
+				.map { it to matcher.getMaterials(it) }
+				.filter { it.second.any() }
+
+			val title = addText(i18n("config.matchers.preview.title", 1.1)).widget
+			// Use the longer text now, so we have the worst case space needed (in case it wraps).
+			val text = addText(i18n("config.matchers.preview.count-some-shown", matchingItems.size, matchingItems.size))
+				.setY1(getWidget(-1), offset = 6).widget
+
+			// Perform height calculation/layout now, so we can determine the space available for the preview items.
+			title.width = width
+			title.calculateHeight()
+			updateAreas()
+			text.width = width
+
+			val spacing = 3
+			val itemListOffset = text.y - y + text.calculateHeight()
+			var remainingHeight = height - 2 * padding - itemListOffset
+
+			val previewWidgets = matchingItems
+				.map { ItemPreviewEntry(minecraft!!.fontRenderer, it.first, it.second) }
+				.take(25) // Hard limit, in case something goes wrong with the calculation below
+				.takeWhile {
+					it.width = width
+					remainingHeight -= it.calculateHeight() + spacing
+					remainingHeight >= 0
+				}
+			if (!previewWidgets.isEmpty()) {
+				layout(previewWidgets[0]).setY1(text, offset = spacing * 2)
+				previewWidgets.subList(1, previewWidgets.size - 1).forEachIndexed { i, widget ->
+					// Because we skip the first one, i is actually the index of the previous widget.
+					layout(widget).setY1(previewWidgets[i], offset = spacing)
+				}
+			}
+
+			if (previewWidgets.size == matchingItems.size) {
+				text.message = i18n("config.matchers.preview.count-all-shown", matchingItems.size)
+			} else {
+				text.message = i18n("config.matchers.preview.count-some-shown", matchingItems.size, previewWidgets.size)
+			}
+		}
+
 		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
 			if (needsUpdate) {
-				updatePreview()
+				init()
 				needsUpdate = false
 			}
 			updateAreas()
@@ -254,50 +307,21 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			renderBackground(minecraft!!, getRealArea())
 		}
 
-		private fun updatePreview() {
-			clear()
-			val matcher = matcher ?: return
-
-			addText(i18n("config.matchers.preview.title"))
-				.widget.calculateHeight() // Height needs to be calculated now to determine the amount of preview items
-			if (minecraft?.world == null) {
-				addText(i18n("config.matchers.preview.not-in-world")).setY1(getWidget(-1), offset = 2)
-				return
-			}
-
-			val matchingItems = itemRegistry.values
-				.map(Item::getDefaultInstance)
-				.map { it to matcher.getMaterials(it) }
-				.filter { it.second.any() }
-			val text = addText(i18n("config.matchers.preview.count", matchingItems.size)).setY1(getWidget(-1), offset = 2).widget
-			updateAreas()
-
-			val spacing = 1
-			var remainingHeight = height + spacing - (text.y + text.calculateHeight() - y)
-			val previewWidgets = matchingItems
-				.map { ItemPreviewEntry(minecraft!!.fontRenderer, it.first, it.second) }
-				.take(25) // Hard limit, in case something goes wrong with the calculation below
-				.takeWhile {
-					it.width = width
-					remainingHeight -= it.calculateHeight() + spacing
-					remainingHeight >= 0
-				}
-			previewWidgets.forEachIndexed { i, widget ->
-				layout(widget).setY1(if (i == 0) text else previewWidgets[i - 1], offset = spacing)
-			}
+		override fun onResize(oldArea: Area, newArea: Area) {
+			init()
+			super.onResize(oldArea, newArea)
 		}
 	}
 
 	inner class ItemPreviewEntry(font: FontRenderer, private val itemStack: ItemStack, materials: Iterable<String>) :
 			ContainerWidget(font) {
-		private val textWidget = TextWidget(font, "")
 		private val itemRenderer = minecraft!!.itemRenderer
-		private val textOffset = (16 - font.FONT_HEIGHT) / 2
+		private val itemName = TextWidget(font, itemStack.displayName.formattedText)
+		private val materialList = TextWidget(font, "materials = ${materials.joinToString(", ")}")
 
 		init {
-			textWidget.message =
-				"${itemStack.displayName.formattedText}\n${materials.map { "material = $it" }.joinToString("\n")}"
-			layout(textWidget).setX1(20).setY1(textOffset)
+			layout(itemName).setX1(20)
+			layout(materialList).setX1(itemName, edge = XEdge.LEFT).setY1(itemName)
 		}
 
 		override fun setHeight(value: Int) {
@@ -305,19 +329,25 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		}
 
 		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
-			this.height = calculateHeight()
 			super.render(mouseX, mouseY, partialT)
-
-			itemRenderer.renderItemIntoGUI(itemStack, x, y)
+			itemRenderer.renderItemIntoGUI(itemStack, x, y + (height - ITEM_HEIGHT) / 2)
 		}
 
 		fun calculateHeight(): Int {
+			itemName.width = width
+			itemName.calculateHeight()
 			updateAreas()
-			return maxOf(16, textOffset + textWidget.calculateHeight())
+			return maxOf(ITEM_HEIGHT, materialList.y - y + materialList.calculateHeight())
+		}
+
+		override fun onResize(oldArea: Area, newArea: Area) {
+			super.onResize(oldArea, newArea)
+			this.height = calculateHeight()
 		}
 	}
 
 	companion object {
 		val LOGGER = LogManager.getLogger()
+		val ITEM_HEIGHT = 16
 	}
 }
