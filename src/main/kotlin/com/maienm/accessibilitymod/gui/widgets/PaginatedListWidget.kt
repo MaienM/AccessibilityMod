@@ -150,7 +150,7 @@ class PaginatedListWidget<T>(
 
 	override fun renderBackground() {
 		val minecraft = Minecraft.getInstance()
-		renderBackground(minecraft, getArea())
+		renderBackground(minecraft, getRealArea())
 		itemWidgets.forEach { renderBackground(minecraft, it.getArea()) }
 	}
 

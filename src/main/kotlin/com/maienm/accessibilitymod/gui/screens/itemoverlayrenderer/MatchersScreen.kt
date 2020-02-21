@@ -246,8 +246,7 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		}
 
 		override fun renderBackground() {
-			super.renderBackground()
-			renderBackground(minecraft!!, getArea())
+			renderBackground(minecraft!!, getRealArea())
 		}
 
 		private fun updatePreview() {

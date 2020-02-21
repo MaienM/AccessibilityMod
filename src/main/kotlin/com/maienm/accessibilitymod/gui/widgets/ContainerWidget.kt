@@ -3,6 +3,7 @@ package com.maienm.accessibilitymod.gui.widgets
 import com.maienm.accessibilitymod.gui.helpers.Area
 import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidget
 import com.maienm.accessibilitymod.gui.helpers.ILayoutableWidgetContainer
+import com.maienm.accessibilitymod.gui.helpers.setArea
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.IGuiEventListener
 import net.minecraft.client.gui.INestedGuiEventHandler
@@ -17,10 +18,12 @@ open class ContainerWidget(override val font: FontRenderer) :
 		ILayoutableWidgetContainer {
 	private var oldArea = Area(-1, -1, -1, -1)
 
+	protected var padding: Int = 0
+
 	protected val widgets: MutableList<Widget> = mutableListOf()
 	override val layoutableWidgets: MutableList<ILayoutableWidget<*>> = mutableListOf()
 
-	private var overlayWidget: ILayoutableWidget<Widget>? = null
+	private var overlayWidget: Widget? = null
 
 	override fun <T : Widget> add(widget: T): T = widget.also { widgets.add(0, it) }
 	override fun <T : Widget> remove(widget: T) {
@@ -31,12 +34,17 @@ open class ContainerWidget(override val font: FontRenderer) :
 
 	override fun getWidget(index: Int) = widgets[(widgets.size + index) % widgets.size]
 
-	override fun getArea(): Area = Area(x, y, width, height)
+	override fun getArea(): Area = Area(x + padding, y + padding, width - 2 * padding, height - 2 * padding)
+	fun getRealArea(): Area = Area(x, y, width, height)
 
 	fun setOverlay(widget: Widget?) {
-		overlayWidget?.also { unlayout(it) }
-		overlayWidget = null
-		widget?.also { overlayWidget = layout(it) }
+		overlayWidget = widget
+		updateAreas()
+	}
+
+	override fun updateAreas() {
+		super.updateAreas()
+		overlayWidget?.setArea(getRealArea())
 	}
 
 	open fun renderBackground() {}
@@ -56,7 +64,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 	}
 
 	override fun children(): MutableList<out IGuiEventListener> {
-		return overlayWidget?.let { mutableListOf(it.widget) } ?: widgets
+		return overlayWidget?.let { mutableListOf(it) } ?: widgets
 	}
 
 	// Implementation of methods of INestedGuiHandler. Identical to the one found in FocusableGui.
