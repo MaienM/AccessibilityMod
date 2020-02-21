@@ -2,26 +2,26 @@ package com.maienm.accessibilitymod.gui.helpers
 
 import com.mojang.blaze3d.platform.GlStateManager
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.AbstractGui
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 
 private fun render(minecraft: Minecraft, action: (Tessellator) -> Unit) {
 	val tessellator = Tessellator.getInstance()
 
-	minecraft.getTextureManager().bindTexture(AbstractGui.BACKGROUND_LOCATION)
+	GlStateManager.disableTexture()
+	GlStateManager.enableBlend()
 	GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f)
-
 	action(tessellator)
+	GlStateManager.enableTexture()
 }
 
-private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Double, height: Double, shadeColor: Int) {
+private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Double, height: Double, opacity: Double) {
 	val bufferbuilder = tessellator.buffer
 
 	fun vertex(x: Double, y: Double) = bufferbuilder
 		.pos(x, y, 0.0)
 		.tex(x / 32.0f, y / 32.0f)
-		.color(shadeColor, shadeColor, shadeColor, 255).endVertex()
+		.color(0, 0, 0, (opacity * 255).toInt()).endVertex()
 
 	bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR)
 	vertex(x, y + height)
@@ -31,20 +31,20 @@ private fun renderRect(tessellator: Tessellator, x: Double, y: Double, width: Do
 	tessellator.draw()
 }
 
-fun renderBackground(minecraft: Minecraft, area: Area, shadeColor: Int = 32) =
-	renderBackground(minecraft, area.x, area.y, area.width, area.height, shadeColor)
+fun renderBackground(minecraft: Minecraft, area: Area, opacity: Double = 0.3) =
+	renderBackground(minecraft, area.x, area.y, area.width, area.height, opacity)
 
-fun renderBackground(minecraft: Minecraft, x: Int, y: Int, width: Int, height: Int, shadeColor: Int = 32) =
-	renderBackground(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), shadeColor)
+fun renderBackground(minecraft: Minecraft, x: Int, y: Int, width: Int, height: Int, opacity: Double = 0.3) =
+	renderBackground(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), opacity)
 
-fun renderBackground(minecraft: Minecraft, x: Double, y: Double, width: Double, height: Double, shadeColor: Int = 32) {
+fun renderBackground(minecraft: Minecraft, x: Double, y: Double, width: Double, height: Double, opacity: Double = 0.3) {
 	render(minecraft) {
-		renderRect(it, x, y, width, height, shadeColor)
+		renderRect(it, x, y, width, height, opacity)
 	}
 }
 
-fun renderBorder(minecraft: Minecraft, area: Area, borderWidth: Double = 1.0, color: Int = 16) =
-	renderBorder(minecraft, area.x, area.y, area.width, area.height, borderWidth, color)
+fun renderBorder(minecraft: Minecraft, area: Area, borderWidth: Double = 1.0, opacity: Double = 1.0) =
+	renderBorder(minecraft, area.x, area.y, area.width, area.height, borderWidth, opacity)
 
 fun renderBorder(
 	minecraft: Minecraft,
@@ -53,8 +53,8 @@ fun renderBorder(
 	width: Int,
 	height: Int,
 	borderWidth: Double = 1.0,
-	color: Int = 16
-) = renderBorder(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), borderWidth, color)
+	opacity: Double = 1.0
+) = renderBorder(minecraft, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), borderWidth, opacity)
 
 fun renderBorder(
 	minecraft: Minecraft,
@@ -63,12 +63,12 @@ fun renderBorder(
 	width: Double,
 	height: Double,
 	borderWidth: Double = 1.0,
-	color: Int = 16
+	opacity: Double = 1.0
 ) {
 	render(minecraft) {
-		renderRect(it, x, y, width, borderWidth, color)
-		renderRect(it, x, y + height - borderWidth, width, borderWidth, color)
-		renderRect(it, x, y, borderWidth, height, color)
-		renderRect(it, x + width - borderWidth, y, borderWidth, height, color)
+		renderRect(it, x, y, width, borderWidth, opacity)
+		renderRect(it, x, y + height - borderWidth, width, borderWidth, opacity)
+		renderRect(it, x, y, borderWidth, height, opacity)
+		renderRect(it, x + width - borderWidth, y, borderWidth, height, opacity)
 	}
 }
