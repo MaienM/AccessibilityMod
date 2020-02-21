@@ -65,10 +65,10 @@ fun <T : ILayoutable> T.setY(y1: Int, y2: Int) = setY1(y1).setY2(y2)
 fun <T : ILayoutable> T.setY(y1: Double, y2: Double) = setY1(y1).setY2(y2)
 
 fun <T : ILayoutable> T.centerX(width: Int) = setX1(0.5, -width / 2).setX2(0.5, width / 2)
-fun <T : ILayoutable> T.centerX(width: Double) = setX1((1 - width) / 2).setX2((width - 1) / 2)
+fun <T : ILayoutable> T.centerX(width: Double) = setX1((1 - width) / 2).setX2(1 - (1 - width) / 2)
 
 fun <T : ILayoutable> T.centerY(height: Int) = setY1(0.5, -height / 2).setY2(0.5, height / 2)
-fun <T : ILayoutable> T.centerY(height: Double) = setY1((1 - height) / 2).setY2((height - 1) / 2)
+fun <T : ILayoutable> T.centerY(height: Double) = setY1((1 - height) / 2).setY2(1 - (1 - height) / 2)
 
 /**
  * Base implementation of IPositionable.
@@ -117,8 +117,7 @@ private class AbsoluteFPC(val value: Int) : IFirstPositionCalculator {
 }
 
 private class FractionFPC(val fraction: Double, val offset: Int = 0) : IFirstPositionCalculator {
-	override fun calculate(dimension: Int, parentOffset: Int): Int =
-		wrap((fraction * dimension + offset).toInt(), dimension)
+	override fun calculate(dimension: Int, parentOffset: Int): Int = (fraction * dimension).toInt() + offset
 }
 
 private fun Widget.hidden() = width == 0 || height == 0
@@ -131,6 +130,7 @@ private class RelativeXFPC(
 ) : IFirstPositionCalculator {
 	private val currentOffset: Int
 		get() = if (widget.hidden()) offsetWhenHidden else offset
+
 	override fun calculate(dimension: Int, parentOffset: Int): Int =
 		widget.x - parentOffset + (if (edge == XEdge.RIGHT) widget.width else 0) + currentOffset
 }
@@ -143,6 +143,7 @@ private class RelativeYFPC(
 ) : IFirstPositionCalculator {
 	private val currentOffset: Int
 		get() = if (widget.hidden()) offsetWhenHidden else offset
+
 	override fun calculate(dimension: Int, parentOffset: Int): Int =
 		widget.y - parentOffset + (if (edge == YEdge.BOTTOM) widget.height else 0) + currentOffset
 }
