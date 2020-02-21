@@ -6,7 +6,6 @@ import com.maienm.accessibilitymod.gui.helpers.YEdge
 import com.maienm.accessibilitymod.gui.helpers.addButton
 import com.maienm.accessibilitymod.gui.helpers.addText
 import com.maienm.accessibilitymod.gui.helpers.centerX
-import com.maienm.accessibilitymod.gui.helpers.renderBackground
 import com.maienm.accessibilitymod.gui.helpers.setHeight
 import com.maienm.accessibilitymod.gui.helpers.setX1
 import com.maienm.accessibilitymod.gui.helpers.setX2
@@ -112,11 +111,6 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		private fun cancel() {
 			close()
 		}
-
-		override fun renderBackground() {
-			super.renderBackground()
-			renderBackground(minecraft!!, getArea(), 20)
-		}
 	}
 
 	/**
@@ -163,10 +157,9 @@ class MappingsScreen(minecraft: Minecraft, lastScreen: Screen?) :
 			close()
 		}
 
-		override fun renderBackground() {
-			super.renderBackground()
-			renderBackground(minecraft!!, getArea(), 20)
+		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
 			saveButton.active = !keyField.text.isEmpty() && !nameField.text.isEmpty()
+			super.render(mouseX, mouseY, partialT)
 		}
 	}
 

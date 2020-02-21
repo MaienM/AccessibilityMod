@@ -48,7 +48,7 @@ open class ContainerWidget(override val font: FontRenderer) :
 			onResize(oldArea, area)
 		}
 		renderBackground()
-		widgets.reversed().forEach { it.render(mouseX, mouseY, partialT) }
+		children().reversed().forEach { (it as? Widget)?.render(mouseX, mouseY, partialT) }
 	}
 
 	open fun onResize(oldArea: Area, newArea: Area) {

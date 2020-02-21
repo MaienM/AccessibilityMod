@@ -100,11 +100,6 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 		private fun cancel() {
 			close()
 		}
-
-		override fun renderBackground() {
-			super.renderBackground()
-			renderBackground(minecraft!!, getArea(), 20)
-		}
 	}
 
 	/**
@@ -307,7 +302,6 @@ class MatchersScreen(minecraft: Minecraft, lastScreen: Screen?) :
 
 		override fun render(mouseX: Int, mouseY: Int, partialT: Float) {
 			this.height = calculateHeight()
-			// renderBackground(minecraft!!, getArea())
 			super.render(mouseX, mouseY, partialT)
 
 			itemRenderer.renderItemIntoGUI(itemStack, x, y)
