@@ -1,3 +1,4 @@
+import com.diffplug.spotless.changelog.Changelog
 import com.diffplug.spotless.changelog.ChangelogAndNext
 import com.diffplug.spotless.changelog.NextVersionCfg
 import net.minecraftforge.gradle.common.util.RunConfig
@@ -140,6 +141,19 @@ task("changelogCheck") {
 	}
 }
 tasks["check"].dependsOn("changelogCheck")
+
+task("changelogToReleaseNotes") {
+	val versionsRawField = Changelog::class.java.getDeclaredField("versionsRaw")
+	versionsRawField.isAccessible = true
+	val versionsRaw = versionsRawField.get(changelogModel.changelog()) as List<Changelog.VersionEntry>
+	val changes = if (isRelease) {
+		versionsRaw.find { it.version() == version }!!
+	} else {
+		versionsRaw.find { it.isUnreleased }!!
+	}
+	println("Updating RELEASENOTES.md")
+	file("RELEASENOTES.md").writeText("${changes.changes().trim()}\n")
+}
 
 publishing {
 	publications {
