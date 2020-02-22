@@ -1,3 +1,5 @@
+import com.diffplug.spotless.changelog.ChangelogAndNext
+import com.diffplug.spotless.changelog.NextVersionCfg
 import net.minecraftforge.gradle.common.util.RunConfig
 import net.minecraftforge.gradle.userdev.DependencyManagementExtension
 import net.minecraftforge.gradle.userdev.UserDevExtension
@@ -20,6 +22,7 @@ buildscript {
 		classpath(kotlin("gradle-plugin", version = "1.3.41"))
 		classpath("net.minecraftforge.gradle:ForgeGradle:3.+")
 		classpath("org.yaml:snakeyaml:1.25")
+		classpath("com.diffplug.spotless-changelog:spotless-changelog-lib:1.1.0")
 	}
 }
 
@@ -29,23 +32,25 @@ plugins {
 }
 apply(plugin = "net.minecraftforge.gradle")
 
-// Determine the current version based on the git tags.
-// If HEAD is tagged, the version of this tag is used. If not, MINOR is incremented and -SNAPSHOT is added.
-// The tag format is v{minecraftVersion}-{version}.
-val gitLastTag = "git describe --tags --abbrev=0".runCommand()!!.trim()
-val gitCurrentTag = "git describe --tags".runCommand()!!.trim()
-val match = "^v(\\d+\\.\\d+\\.\\d+)-(\\d+\\.\\d+\\.\\d+)$".toPattern().matcher(gitLastTag)
+// Read the changelog. Used for release notes or to determine the snapshot version, depending on which is needed.
+val nextVersionCfg = NextVersionCfg()
+val changelogFile = project.file(ChangelogAndNext.DEFAULT_FILE)
+val changelogModel = ChangelogAndNext.calculateUsingCache(changelogFile, nextVersionCfg)
+
+// Grab & parse tag info. This gives both the name of the last tag, as well as an extra marker if the current commit is
+// not the one that is tagged, which is used for the snapshot names.
+val gitDescribe = "git describe --tags".runCommand()!!.trim()
+val match = "^v(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>\\d+\\.\\d+\\.\\d+(?<snap>-.*))$".toPattern().matcher(gitDescribe)
 if (!match.matches()) {
 	throw Exception("Unable to parse version from git tag.")
 }
-val minecraftVersion = match.group(1)!!
-val modVersion = if (gitLastTag != gitCurrentTag) {
-	val parts = match.group(2)!!.split(".").map(Integer::parseInt).toMutableList()
-	parts.add(parts.removeAt(parts.size - 1) + 1)
-	parts.joinToString(".") + "-SNAPSHOT"
-} else {
-	match.group(2)!!
-}
+
+// Determine the current version based on the changelog and git tag info collected above.
+// If we're on a tag, then this tag is the version, simple as that.
+// If we're not, bump the version using the changelog, and add the snapshot info collected from git.
+val minecraftVersion = match.group("mc")!!
+val isRelease = match.group("snap").isEmpty()
+val modVersion = if (isRelease) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
 
 version = "$minecraftVersion-$modVersion"
 group = "com.maienm"
@@ -119,6 +124,22 @@ tasks.withType<Jar> {
 		attributes["Implementation-Timestamp"] = LocalDateTime.now()
 	}
 }
+
+task("changelogCheck") {
+	group = "documentation"
+
+	doFirst {
+		val errors = changelogModel.changelog().errors()
+		if (!errors.isEmpty()) {
+			val path = getProject().getRootDir().toPath().relativize(changelogFile.toPath()).toString()
+			val allErrors = errors
+				.map { (index, error) -> "$path${if (index != -1) ":$index" else ""}: $error" }
+				.joinToString("\n")
+			throw GradleException(allErrors)
+		}
+	}
+}
+tasks["check"].dependsOn("changelogCheck")
 
 publishing {
 	publications {
