@@ -156,7 +156,16 @@ publishing {
 	}
 	repositories {
 		maven {
+			name = "Local"
 			url = URI.create("file:///${project.projectDir}/mcmodsrepo")
+		}
+		maven {
+			name = "Github"
+			url = URI.create("https://maven.pkg.github.com/MaienM/AccessibilityMod")
+			credentials {
+				username = "MaienM"
+				password = project.findProperty("GITHUB_TOKEN") as? String
+			}
 		}
 	}
 }
