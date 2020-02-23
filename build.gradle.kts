@@ -30,6 +30,7 @@ buildscript {
 plugins {
 	kotlin("jvm") version "1.3.41"
 	`maven-publish`
+	id("com.github.breadmoirai.github-release") version "2.2.11"
 }
 apply(plugin = "net.minecraftforge.gradle")
 
@@ -40,8 +41,9 @@ val changelogModel = ChangelogAndNext.calculateUsingCache(changelogFile, nextVer
 
 // Grab & parse tag info. This gives both the name of the last tag, as well as an extra marker if the current commit is
 // not the one that is tagged, which is used for the snapshot names.
+val TAG_PATTERN = "^v(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>\\d+\\.\\d+\\.\\d+(?<pre>-[a-z].*)?(?<snap>-[0-9].*))$"
 val gitDescribe = System.getenv("GIT_TAG")?.toString() ?: "git describe --tags".runCommand()!!.trim()
-val match = "^v(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>\\d+\\.\\d+\\.\\d+(?<snap>-.*))$".toPattern().matcher(gitDescribe)
+val match = TAG_PATTERN.toPattern().matcher(gitDescribe)
 if (!match.matches()) {
 	throw Exception("Unable to parse version from git tag.")
 }
@@ -50,8 +52,21 @@ if (!match.matches()) {
 // If we're on a tag, then this tag is the version, simple as that.
 // If we're not, bump the version using the changelog, and add the snapshot info collected from git.
 val minecraftVersion = match.group("mc")!!
-val isRelease = match.group("snap").isEmpty()
-val modVersion = if (isRelease) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
+val isSnapshot = !(match.group("snap")?.isEmpty() ?: true)
+val isPreRelease = !(match.group("pre")?.isEmpty() ?: true)
+val modVersion = if (!isSnapshot) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
+
+// Accessor for the current changelog entry. Uses reflection because the library only exposes unreleased changes.
+val currentChangelog by lazy {
+	val versionsRawField = Changelog::class.java.getDeclaredField("versionsRaw")
+	versionsRawField.isAccessible = true
+	val versionsRaw = versionsRawField.get(changelogModel.changelog()) as List<Changelog.VersionEntry>
+	if (isSnapshot) {
+		versionsRaw.find { it.isUnreleased }!!
+	} else {
+		versionsRaw.find { it.version() == version }!!
+	}
+}
 
 version = "$minecraftVersion-$modVersion"
 group = "com.maienm"
@@ -142,18 +157,6 @@ task("changelogCheck") {
 }
 tasks["check"].dependsOn("changelogCheck")
 
-task("changelogToReleaseNotes") {
-	val versionsRawField = Changelog::class.java.getDeclaredField("versionsRaw")
-	versionsRawField.isAccessible = true
-	val versionsRaw = versionsRawField.get(changelogModel.changelog()) as List<Changelog.VersionEntry>
-	val changes = if (isRelease) {
-		versionsRaw.find { it.version() == version }!!
-	} else {
-		versionsRaw.find { it.isUnreleased }!!
-	}
-	file("RELEASENOTES.md").writeText("${changes.changes().trim()}\n")
-}
-
 publishing {
 	publications {
 		create<MavenPublication>(project.name) {
@@ -198,6 +201,16 @@ publishing {
 			}
 		}
 	}
+}
+githubRelease {
+	repo("AccessibilityMod")
+	owner("MaienM")
+	setToken(project.findProperty("GITHUB_TOKEN") as? String)
+	targetCommitish(gitDescribe)
+	releaseName(version as String)
+	prerelease(isPreRelease)
+	body { PatchedString(currentChangelog.changes().trim().toString()) }
+	releaseAssets(tasks["jar"].outputs.files.files)
 }
 
 dependencies {
@@ -282,5 +295,14 @@ fun String.runCommand(): String? {
 	} catch (e: java.io.IOException) {
 		e.printStackTrace()
 		return null
+	}
+}
+
+/**
+ * GithubPublish uses a method that doesn't exist, which causes problems. This wrapper class provides this method.
+ */
+class PatchedString(private val string: String) : CharSequence by string {
+	fun replace(replacements: Map<String, String>) = replacements.entries.fold(string) { str, entry ->
+		str.replace(Regex.fromLiteral(entry.key), entry.value)
 	}
 }
