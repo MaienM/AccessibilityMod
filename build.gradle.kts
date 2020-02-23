@@ -221,6 +221,23 @@ curseforge {
 		releaseType = if (isPreRelease) "beta" else "release"
 	})
 }
+task("release") {
+	group = "publishing"
+
+	dependsOn("jar")
+	doFirst {
+		if (isSnapshot) {
+			throw GradleException("Current commit is not properly tagged as release")
+		}
+		if (currentChangelog.isUnreleased) {
+			throw GradleException("Latest entry in changelog is still marked as unreleased")
+		}
+		if (currentChangelog.version() != version) {
+			throw GradleException("Version of last entry in changelog (${currentChangelog.version()} should be $version")
+		}
+		finalizedBy("githubRelease", "curseforge")
+	}
+}
 
 dependencies {
 	"minecraft"("net.minecraftforge:forge:$forgeVersion")
