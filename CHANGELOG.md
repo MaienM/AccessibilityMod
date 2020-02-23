@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 Schema](https://mcforge.readthedocs.io/en/1.14.x/conventions/versioning/).
 
 ## [Unreleased]
+
+## [1.14.4-1.0.0.0] - 23-02-2020
 ### Added:
 - Initial implementation of item overlays
 - Support item overlays in JEI sidebar
