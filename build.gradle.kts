@@ -265,25 +265,7 @@ publishing {
 		}
 	}
 }
-githubRelease {
-	repo("AccessibilityMod")
-	owner("MaienM")
-	setToken(getProp("GITHUB_TOKEN"))
-	targetCommitish(gitDescribe)
-	releaseName(version as String)
-	prerelease(isPreRelease)
-	body { PatchedString(currentChangelog.changes().trim().toString()) }
-	releaseAssets(tasks["jar"].outputs.files.files)
-	dryRun(true)
-}
-curseforge {
-	this.project(closureOf<com.matthewprenger.cursegradle.CurseProject> {
-		apiKey = getProp("CURSEFORGE_API_KEY")
-		id = "363598"
-		changelog = currentChangelog.changes().trim()
-		releaseType = if (isPreRelease) "beta" else "release"
-	})
-}
+
 task("checkReadyForRelease") {
 	group = "publishing"
 
@@ -300,6 +282,31 @@ task("checkReadyForRelease") {
 		}
 	}
 }
+
+githubRelease {
+	repo("AccessibilityMod")
+	owner("MaienM")
+	setToken(getProp("GITHUB_TOKEN"))
+	targetCommitish(gitDescribe)
+	releaseName(version as String)
+	prerelease(isPreRelease)
+	body { PatchedString(currentChangelog.changes().trim().toString()) }
+	releaseAssets(tasks["jar"].outputs.files.files)
+	overwrite(true)
+}
+tasks["githubRelease"].dependsOn("checkReadyForRelease")
+
+curseforge {
+	this.project(closureOf<com.matthewprenger.cursegradle.CurseProject> {
+		apiKey = getProp("CURSEFORGE_API_KEY")
+		id = "363598"
+		changelog = currentChangelog.changes().trim()
+		changelogType = "markdown"
+		releaseType = if (isPreRelease) "beta" else "release"
+	})
+}
+tasks["curseforge"].dependsOn("checkReadyForRelease")
+
 task("release") {
 	group = "publishing"
 
