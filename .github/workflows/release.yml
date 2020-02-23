@@ -9,10 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: |
-          sudo apt update
-          sudo apt install -y git
-          echo "::set-env name=GIT_TAG::$(git describe --tags)"
+      - name: Get last tag
+        run: |
+          echo "::set-env name=GIT_TAG::$GITHUB_REF"
         id: tag
       - name: Gradle Command
         uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-8
