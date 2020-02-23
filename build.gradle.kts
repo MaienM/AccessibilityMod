@@ -1,6 +1,7 @@
 import com.diffplug.spotless.changelog.Changelog
 import com.diffplug.spotless.changelog.ChangelogAndNext
 import com.diffplug.spotless.changelog.NextVersionCfg
+import com.diffplug.spotless.changelog.NextVersionFunction.NonSemver
 import net.minecraftforge.gradle.common.util.RunConfig
 import net.minecraftforge.gradle.userdev.DependencyManagementExtension
 import net.minecraftforge.gradle.userdev.UserDevExtension
@@ -35,16 +36,65 @@ plugins {
 }
 apply(plugin = "net.minecraftforge.gradle")
 
+// Pattern that can break the version number + tag info up into segments.
+// Example: 1.14.4-1.0.2.3-alpha1-24-fdf3d3
+// mc: 1.14.4
+// mod: 1.0.2.3-alpha1-24-fdf3d3
+// sem: 1.0.2.3
+// pre: -alpha1
+// snap: -24-fdf3d3
+val VERSION_PATTERN =
+	"(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>(?<sem>\\d+\\.\\d+\\.\\d+\\.\\d+)(?<pre>-[a-z][^-]*)?(?<snap>-[0-9].*)?)"
+
 // Read the changelog. Used for release notes or to determine the snapshot version, depending on which is needed.
-val nextVersionCfg = NextVersionCfg()
+val nextVersionFunction = object : NonSemver() {
+	private val ifFoundBumpMod = listOf("**BREAKING**")
+	private val ifFoundBumpApi = listOf("**BREAKING API**")
+	private val ifFoundBumpMinor = listOf("### Added")
+
+	private fun isFound(unreleasedChanges: String, lookFor: List<String>) =
+		lookFor.any { unreleasedChanges.contains(it, false) }
+
+	override fun nextVersion(unreleasedChanges: String, lastVersion: String?): String? {
+		val lastMatch = VERSION_PATTERN.toPattern().matcher(lastVersion ?: "0.0.0.0")
+		if (!lastMatch.matches()) {
+			throw GradleException("Unable to parse last version from changelog")
+		}
+
+		// If the previous version was marked as prerelease, assume the version number was already incremented correctly.
+		if (lastMatch.group("pre") != null) {
+			return lastMatch.group("sem")
+		}
+
+		val parts = lastMatch.group("sem").split(".").map(String::toInt).toMutableList()
+
+		if (isFound(unreleasedChanges, ifFoundBumpMod)) {
+			parts[0] += 1
+			parts[1] = 0
+			parts[2] = 0
+			parts[3] = 0
+		} else if (isFound(unreleasedChanges, ifFoundBumpApi)) {
+			parts[1] += 1
+			parts[2] = 0
+			parts[3] = 0
+		} else if (isFound(unreleasedChanges, ifFoundBumpMinor)) {
+			parts[2] += 1
+			parts[3] = 0
+		} else {
+			parts[3] += 1
+		}
+
+		return "${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}"
+	}
+}
+val nextVersionCfg = NextVersionCfg().also { it.function = nextVersionFunction }
 val changelogFile = project.file(ChangelogAndNext.DEFAULT_FILE)
-val changelogModel = ChangelogAndNext.calculateUsingCache(changelogFile, nextVersionCfg)
+val changelogModel = ChangelogAndNext.calculate(changelogFile, nextVersionCfg)
 
 // Grab & parse tag info. This gives both the name of the last tag, as well as an extra marker if the current commit is
 // not the one that is tagged, which is used for the snapshot names.
-val TAG_PATTERN = "^v(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>\\d+\\.\\d+\\.\\d+(?<pre>-[a-z].*)?(?<snap>-[0-9].*))$"
 val gitDescribe = System.getenv("GIT_TAG")?.toString() ?: "git describe --tags".runCommand()!!.trim()
-val match = TAG_PATTERN.toPattern().matcher(gitDescribe)
+val match = "^v$VERSION_PATTERN$".toPattern().matcher(gitDescribe)
 if (!match.matches()) {
 	throw Exception("Unable to parse version from git tag.")
 }
@@ -53,8 +103,8 @@ if (!match.matches()) {
 // If we're on a tag, then this tag is the version, simple as that.
 // If we're not, bump the version using the changelog, and add the snapshot info collected from git.
 val minecraftVersion = match.group("mc")!!
-val isSnapshot = !(match.group("snap")?.isEmpty() ?: true)
-val isPreRelease = !(match.group("pre")?.isEmpty() ?: true)
+val isSnapshot = match.group("snap") != null
+val isPreRelease = match.group("pre") != null
 val modVersion = if (!isSnapshot) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
 
 // Accessor for the current changelog entry. Uses reflection because the library only exposes unreleased changes.
@@ -212,11 +262,12 @@ githubRelease {
 	prerelease(isPreRelease)
 	body { PatchedString(currentChangelog.changes().trim().toString()) }
 	releaseAssets(tasks["jar"].outputs.files.files)
+	dryRun(true)
 }
 curseforge {
 	this.project(closureOf<com.matthewprenger.cursegradle.CurseProject> {
 		apiKey = project.findProperty("CURSEFORGE_API_KEY")
-		id = "363598"
+		id = "363598-"
 		changelog = currentChangelog.changes().trim()
 		releaseType = if (isPreRelease) "beta" else "release"
 	})
