@@ -284,7 +284,7 @@ curseforge {
 		releaseType = if (isPreRelease) "beta" else "release"
 	})
 }
-task("release") {
+task("checkReadyForRelease") {
 	group = "publishing"
 
 	dependsOn("jar")
@@ -298,8 +298,17 @@ task("release") {
 		if (currentChangelog.version().toString() != version) {
 			throw GradleException("Version of last entry in changelog (${currentChangelog.version()}) should be $version")
 		}
-		finalizedBy("githubRelease", "curseforge")
 	}
+}
+task("release") {
+	group = "publishing"
+
+	dependsOn("checkReadyForRelease")
+	dependsOn("githubRelease")
+	dependsOn("curseforge")
+
+	githubRelease { mustRunAfter("checkReadyForRelease") }
+	curseforge { mustRunAfter("githubRelease") }
 }
 
 dependencies {
