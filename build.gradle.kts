@@ -100,8 +100,8 @@ val changelogModel = ChangelogAndNext.calculate(changelogFile, nextVersionCfg)
 
 // Grab & parse tag info. This gives both the name of the last tag, as well as an extra marker if the current commit is
 // not the one that is tagged, which is used for the snapshot names.
-val gitDescribe = System.getenv("GIT_TAG")?.toString() ?: "git describe --tags".runCommand()!!.trim()
-val match = "^v$VERSION_PATTERN$".toPattern().matcher(gitDescribe)
+val gitDescribe = System.getenv("GIT_TAG") ?: "git describe --tags".runCommand()!!.trim()
+val match = "^v$VERSION_PATTERN$".toPattern().matcher(gitDescribe)!!
 if (!match.matches()) {
 	throw Exception("Unable to parse version from git tag ($gitDescribe).")
 }
@@ -113,6 +113,7 @@ val minecraftVersion = match.group("mc")!!
 val isSnapshot = match.group("snap") != null
 val isPreRelease = match.group("pre") != null
 val modVersion = if (!isSnapshot) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
+println("Version $modVersion for minecraft $minecraftVersion (snapshot: $isSnapshot, prerelease: $isPreRelease)")
 
 // Accessor for the current changelog entry. Uses reflection because the library only exposes unreleased changes.
 val currentChangelog by lazy {
