@@ -121,9 +121,10 @@ val currentChangelog by lazy {
 	versionsRawField.isAccessible = true
 	val versionsRaw = versionsRawField.get(changelogModel.changelog()) as List<Changelog.VersionEntry>
 	if (isSnapshot) {
-		versionsRaw.find { it.isUnreleased }!!
+		versionsRaw.find { it.isUnreleased } ?: throw GradleException("Changelog should contain an [Unreleased] section")
 	} else {
-		versionsRaw.find { it.version() == version }!!
+		versionsRaw.find { !it.isUnreleased && it.version().toString() == version }
+			?: throw GradleException("Changelog should contain an [$version] section")
 	}
 }
 
@@ -291,8 +292,8 @@ task("release") {
 		if (currentChangelog.isUnreleased) {
 			throw GradleException("Latest entry in changelog is still marked as unreleased")
 		}
-		if (currentChangelog.version() != version) {
-			throw GradleException("Version of last entry in changelog (${currentChangelog.version()} should be $version")
+		if (currentChangelog.version().toString() != version) {
+			throw GradleException("Version of last entry in changelog (${currentChangelog.version()}) should be $version")
 		}
 		finalizedBy("githubRelease", "curseforge")
 	}
