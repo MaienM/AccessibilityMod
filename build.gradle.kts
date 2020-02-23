@@ -58,7 +58,7 @@ val nextVersionFunction = object : NonSemver() {
 	override fun nextVersion(unreleasedChanges: String, lastVersion: String?): String? {
 		val lastMatch = VERSION_PATTERN.toPattern().matcher(lastVersion ?: "0.0.0.0")
 		if (!lastMatch.matches()) {
-			throw GradleException("Unable to parse last version from changelog")
+			throw GradleException("Unable to parse last version ($lastVersion} from changelog")
 		}
 
 		// If the previous version was marked as prerelease, assume the version number was already incremented correctly.
@@ -96,7 +96,7 @@ val changelogModel = ChangelogAndNext.calculate(changelogFile, nextVersionCfg)
 val gitDescribe = System.getenv("GIT_TAG")?.toString() ?: "git describe --tags".runCommand()!!.trim()
 val match = "^v$VERSION_PATTERN$".toPattern().matcher(gitDescribe)
 if (!match.matches()) {
-	throw Exception("Unable to parse version from git tag.")
+	throw Exception("Unable to parse version from git tag ($gitDescribe).")
 }
 
 // Determine the current version based on the changelog and git tag info collected above.
