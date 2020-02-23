@@ -40,7 +40,7 @@ val changelogModel = ChangelogAndNext.calculateUsingCache(changelogFile, nextVer
 
 // Grab & parse tag info. This gives both the name of the last tag, as well as an extra marker if the current commit is
 // not the one that is tagged, which is used for the snapshot names.
-val gitDescribe = "git describe --tags".runCommand()!!.trim()
+val gitDescribe = System.getenv("GIT_TAG")?.toString() ?: "git describe --tags".runCommand()!!.trim()
 val match = "^v(?<mc>\\d+\\.\\d+\\.\\d+)-(?<mod>\\d+\\.\\d+\\.\\d+(?<snap>-.*))$".toPattern().matcher(gitDescribe)
 if (!match.matches()) {
 	throw Exception("Unable to parse version from git tag.")
@@ -151,7 +151,6 @@ task("changelogToReleaseNotes") {
 	} else {
 		versionsRaw.find { it.isUnreleased }!!
 	}
-	println("Updating RELEASENOTES.md")
 	file("RELEASENOTES.md").writeText("${changes.changes().trim()}\n")
 }
 
