@@ -17,3 +17,6 @@ jobs:
         uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-8
         with:
           args: release
+        env:
+          GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
+          CURSEFORGE_API_KEY: "${{secrets.CURSEFORGE_API_KEY}}"
