@@ -36,6 +36,13 @@ plugins {
 }
 apply(plugin = "net.minecraftforge.gradle")
 
+// Get a value from either the environment or gradle properties.
+fun getProp(key: String): String? {
+	val value = System.getenv(key) ?: project.findProperty(key) as? String
+	value ?: println("Cannot find $key in environment or gradle properties.")
+	return value
+}
+
 // Pattern that can break the version number + tag info up into segments.
 // Example: 1.14.4-1.0.2.3-alpha1-24-fdf3d3
 // mc: 1.14.4
@@ -248,7 +255,7 @@ publishing {
 			url = URI.create("https://maven.pkg.github.com/MaienM/AccessibilityMod")
 			credentials {
 				username = "MaienM"
-				password = project.findProperty("GITHUB_TOKEN") as? String
+				password = getProp("GITHUB_TOKEN")
 			}
 		}
 	}
@@ -256,7 +263,7 @@ publishing {
 githubRelease {
 	repo("AccessibilityMod")
 	owner("MaienM")
-	setToken(project.findProperty("GITHUB_TOKEN") as? String)
+	setToken(getProp("GITHUB_TOKEN"))
 	targetCommitish(gitDescribe)
 	releaseName(version as String)
 	prerelease(isPreRelease)
@@ -266,8 +273,8 @@ githubRelease {
 }
 curseforge {
 	this.project(closureOf<com.matthewprenger.cursegradle.CurseProject> {
-		apiKey = project.findProperty("CURSEFORGE_API_KEY")
-		id = "363598-"
+		apiKey = getProp("CURSEFORGE_API_KEY")
+		id = "363598"
 		changelog = currentChangelog.changes().trim()
 		releaseType = if (isPreRelease) "beta" else "release"
 	})
