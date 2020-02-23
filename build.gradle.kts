@@ -222,6 +222,9 @@ publishing {
 		create<MavenPublication>(project.name) {
 			from(components["java"])
 
+			groupId = group.toString()
+			artifactId = "AccessibilityMod"
+
 			pom {
 				withXml {
 					val root = asNode()
