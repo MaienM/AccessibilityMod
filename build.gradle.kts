@@ -31,6 +31,7 @@ plugins {
 	kotlin("jvm") version "1.3.41"
 	`maven-publish`
 	id("com.github.breadmoirai.github-release") version "2.2.11"
+	id("com.matthewprenger.cursegradle") version "1.4.0"
 }
 apply(plugin = "net.minecraftforge.gradle")
 
@@ -211,6 +212,14 @@ githubRelease {
 	prerelease(isPreRelease)
 	body { PatchedString(currentChangelog.changes().trim().toString()) }
 	releaseAssets(tasks["jar"].outputs.files.files)
+}
+curseforge {
+	this.project(closureOf<com.matthewprenger.cursegradle.CurseProject> {
+		apiKey = project.findProperty("CURSEFORGE_API_KEY")
+		id = "363598"
+		changelog = currentChangelog.changes().trim()
+		releaseType = if (isPreRelease) "beta" else "release"
+	})
 }
 
 dependencies {
