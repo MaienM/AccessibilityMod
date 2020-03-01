@@ -62,7 +62,7 @@ val nextVersionFunction = object : NonSemver() {
 		lookFor.any { unreleasedChanges.contains(it, false) }
 
 	override fun nextVersion(unreleasedChanges: String, lastVersion: String?): String? {
-		val lastMatch = VERSION_PATTERN.toPattern().matcher(lastVersion ?: "0.0.0.0")
+		val lastMatch = VERSION_PATTERN.toPattern().matcher(lastVersion ?: "0.0.0-0.0.0.0")
 		if (!lastMatch.matches()) {
 			throw GradleException("Unable to parse last version ($lastVersion} from changelog")
 		}
@@ -111,7 +111,11 @@ if (!match.matches()) {
 val minecraftVersion = match.group("mc")!!
 val isSnapshot = match.group("snap") != null
 val isPreRelease = match.group("pre") != null
-val modVersion = if (!isSnapshot) match.group("mod")!! else "${changelogModel.versions().next()}${match.group("snap")}"
+val modVersion = if (isSnapshot) {
+	"${changelogModel.versions().next().split("-").last()}-SNAPSHOT${match.group("snap")}"
+} else {
+	match.group("mod")!!
+}
 println("Version $modVersion for minecraft $minecraftVersion (snapshot: $isSnapshot, prerelease: $isPreRelease)")
 
 // Accessor for the current changelog entry. Uses reflection because the library only exposes unreleased changes.
