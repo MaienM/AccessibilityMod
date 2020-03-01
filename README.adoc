@@ -14,13 +14,14 @@ which is then mapped to text to be displayed. If no text is configured for the g
 you can limit it to only the cases you find useful.
 
 .Can you tell which is which at a glance? I cannot.
-image::examples/ingots-unlabeled.png[A few ingots with similar colors/look.]
+image::examples/ingots-unlabeled.png["A few ingots with similar colors/look."]
 
 .Now I can!
-image::examples/ingots-labeled.png[The same ingots with text rendered on top of them (Fe for iron, Cu for copper, etc).]
+image::examples/ingots-labeled.png["The same ingots with text rendered on top of them (Fe for iron, Cu for copper, etc)."]
 
 .The names can be customized.
-image::examples/ingots-labeled-alt.png[The same ingots, with different text (Iron for iron, Copper for copper, etc).]
+image::examples/ingots-labeled-alt.png["The same ingots, with different text (Iron for iron, Copper for copper, etc)."]
 
 .Works on more than just ingots.
-image::examples/misc-labeled.png[A few different items made of iron (ore, block, ingot, nugget, dust, gear).]
+image::examples/misc-labeled.png["A few different items made of iron (ore, block, ingot, nugget, dust, gear)."]
+
