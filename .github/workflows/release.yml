@@ -10,13 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Get last tag
+        id: tag
         run: |
           echo "::set-env name=GIT_TAG::${GITHUB_REF##*/}"
-        id: tag
-      - name: Gradle Command
+      - name: Check everything is ready for release
         uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-8
         with:
-          args: release
+          args: checkReadyForRelease
+      - name: Release on Github
+        uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-8
+        with:
+          args: githubRelease
         env:
           GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
+      - name: Release on CurseForge
+        uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-8
+        with:
+          args: curseforge
+        env:
           CURSEFORGE_API_KEY: "${{secrets.CURSEFORGE_API_KEY}}"
