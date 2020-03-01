@@ -11,7 +11,6 @@ import java.io.PipedReader
 import java.io.PipedWriter
 import java.io.Reader
 import java.io.Writer
-import java.net.URI
 import java.time.LocalDateTime
 
 buildscript {
@@ -254,15 +253,20 @@ publishing {
 			}
 		}
 	}
-	repositories {
-		maven {
-			name = "Github"
-			url = URI.create("https://maven.pkg.github.com/MaienM/AccessibilityMod")
-			credentials {
-				username = "MaienM"
-				password = getProp("GITHUB_TOKEN")
-			}
+}
+
+task("prepareArtifactsForGithub") {
+	group = "publishing"
+
+	dependsOn("jar")
+	doFirst {
+		val dir = temporaryDir
+		dir.deleteRecursively()
+		tasks["jar"].outputs.files.files.forEach {
+			it.copyTo(dir.resolve(it.name), overwrite = false)
 		}
+		println("::set-output name=version::$version")
+		println("::set-output name=artifacts::${dir.relativeTo(rootDir)}")
 	}
 }
 
